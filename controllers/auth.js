@@ -6,7 +6,6 @@ const { handleHttpError } = require("../utils/handleErrors");
 
 const registerController = async (req, res) => {
     try{
-        console.log(req.body);
         req = matchedData(req);
         const password = await encrypt(req.password);
         const body = {...req, password};
@@ -15,7 +14,7 @@ const registerController = async (req, res) => {
     
         const data = {
             token: await tokenSign(dataUser),
-            user: dataUser
+            user: dataUser,
         }
         res.send(data);
     } catch(e){

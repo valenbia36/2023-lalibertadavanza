@@ -15,12 +15,14 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "jest"
+    "test": "cross-env NODE_ENV=test jest --silent --coverage --runInBand",
+    "test:watch": "cross-env NODE_ENV=test jest --watch --runInBand"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "jest": "^29.7.0",
     "supertest": "^6.3.3"
   },
@@ -29,6 +31,10 @@
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],
-    "coverageReporters":["json","html"]
+    "coverageReporters": [
+      "json",
+      "html"
+    ],
+    "globalTeardown":"./global-kill.js"
   }
 }

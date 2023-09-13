@@ -33,8 +33,7 @@
       "/node_modules/"
     ],
     "coverageReporters": [
-      "json",
-      "html"
+      "lcov"
     ],
     "globalTeardown": "./global-kill.js"
   }

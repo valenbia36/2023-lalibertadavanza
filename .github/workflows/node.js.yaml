@@ -25,12 +25,9 @@ jobs:
         run: npm ci
       - name: Run test
         run: npm run test
-        
-  finish:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Coveralls Finished
+      
+      - name: Upload coverage to Codecov
         uses: coverallsapp/github-action@master
         with:
+          path-to-lcov: ./coverage/lcov.info
           github-token: ${{ secrets.GITHUB_TOKEN }}

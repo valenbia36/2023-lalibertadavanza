@@ -15,7 +15,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest --silent --coverage --runInBand",
+    "test": "cross-env NODE_ENV=test jest  --coverage --runInBand",
     "test:watch": "cross-env NODE_ENV=test jest --watch --runInBand"
   },
   "author": "",

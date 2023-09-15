@@ -29,3 +29,9 @@ test("Se creo el alimento correctamente", async() => {
     )
     expect(response.statusCode).toEqual(200);
 })
+
+test("Se obtuvieron los alimentos correctamente [200]", async() => {
+    const response = await request(app)
+    .get('/api/foods')
+    expect(response.statusCode).toEqual(200);
+})

@@ -74,7 +74,7 @@ const getUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try{
         const data = await usersModel.findOneAndUpdate(
-            req.params.id, req.body
+            { "_id": req.params.id }, req.body
         );
         res.send({data});
     } catch(e){

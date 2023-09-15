@@ -38,3 +38,9 @@ test("Se creo la comida correctamente", async() => {
     )
     expect(response.statusCode).toEqual(200);
 })
+
+test("Esto deberia retornar un 200", async() => {
+    const response = await request(app)
+    .get('/api/meals')
+    expect(response.statusCode).toEqual(200);
+})

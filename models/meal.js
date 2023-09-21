@@ -9,6 +9,12 @@ const mealSchema = new mongoose.Schema(
         },
         foods: {
             type: [],
+        },
+        date:{
+            type: String
+        },
+        hour:{
+            type: String
         }
     },
     {

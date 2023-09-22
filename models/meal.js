@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const mongooseDelete = require('mongoose-delete');
-const { foodModel } = require('../models');
 
 const mealSchema = new mongoose.Schema(
     {
@@ -15,6 +14,9 @@ const mealSchema = new mongoose.Schema(
         },
         hour:{
             type: String
+        },
+        calories:{
+            type: Number
         }
     },
     {

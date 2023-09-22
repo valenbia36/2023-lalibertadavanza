@@ -12,7 +12,10 @@ test("Esto deberia retornar un 403", async() => {
     .send(
         {
             "name":"",
-            "foods":[]
+            "foods":[],
+            "date" : "20/10/1998",
+            "hour":"20:15",
+            "calories":200
         }
     )
     expect(response.statusCode).toEqual(403);
@@ -27,13 +30,18 @@ test("Se creo la comida correctamente", async() => {
             "foods": [
                 {
                     "name" : "Papa",
-                    "calories": "10"
+                    "calories": "10",
+                    "quantity":1
                 },
                 {
                     "name" : "Lomo",
-                    "calories": "20"
+                    "calories": "20",
+                    "quantity":1
                 }
-            ]
+            ],
+            "date" : "20/10/1998",
+            "hour":"20:15",
+            "calories":200
         }
     )
     expect(response.statusCode).toEqual(200);

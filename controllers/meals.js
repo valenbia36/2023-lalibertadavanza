@@ -12,6 +12,15 @@ const getMeals = async (req, res) => {
     }
 }
 
+const getMealsByUserId = async (req, res) => {
+    try{
+        const user = req.user;
+        const data = await mealModel.find({userId: req.params.id});
+        res.send({ data, user });        
+    } catch(e){
+        handleHttpError(res, 'ERROR_GET_MEALS', 500);
+    }
+}
 
 const createMeal = async (req, res) => {
     try{
@@ -22,4 +31,4 @@ const createMeal = async (req, res) => {
     }
 }
 
-module.exports = { getMeals, createMeal };
+module.exports = { getMeals, createMeal, getMealsByUserId };

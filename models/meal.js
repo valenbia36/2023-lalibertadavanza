@@ -17,6 +17,9 @@ const mealSchema = new mongoose.Schema(
         },
         calories:{
             type: Number
+        },
+        userId:{
+            type: String
         }
     },
     {

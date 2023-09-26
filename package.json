@@ -9,7 +9,8 @@
     "mongodb": "^6.0.0",
     "mongoose": "^7.5.0",
     "mongoose-delete": "^1.0.1",
-    "mongose": "^0.0.2-security"
+    "mongose": "^0.0.2-security",
+    "sinon": "^16.0.0"
   },
   "name": "pyd-heliapp-back",
   "version": "1.0.0",

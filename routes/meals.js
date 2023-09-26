@@ -7,6 +7,4 @@ router.get("/", getMeals);
 router.get("/user/:id", getMealsByUserId);
 router.post("/", validatorCreateMeal, createMeal);
 
-
-
 module.exports = router;

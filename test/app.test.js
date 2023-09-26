@@ -1,10 +1,13 @@
-describe("[APP] Esta es la prueba general", () =>{
-    test("Esto deberia retornar 8", () => {
-        const a = 4;
-        const b = 4;
+const sinon = require('sinon');
+const dbConnect = require('../config/mongo');
+const mongoose = require('mongoose');
 
-        const total = a + b;
+test('The connection to the database should fail', async () => {
+  const connectStub = sinon.stub(mongoose, 'connect').throws(new Error('Connection error'));
 
-        expect(total).toEqual(8);
-    })
+  const consoleErrorSpy = sinon.spy(console, 'error');
+
+  await dbConnect();
+
+  expect(connectStub.calledOnce).toBe(true);
 })

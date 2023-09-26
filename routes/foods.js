@@ -8,6 +8,4 @@ const { validatorCreateFood} = require('../validators/foods');
 router.get("/", getFoods);
 router.post("/", validatorCreateFood, createFood);
 
-
-
 module.exports = router;

@@ -1,4 +1,5 @@
 const request = require('supertest');
+const sinon = require('sinon');
 const app = require('../app');
 const { usersModel } = require("../models");
 
@@ -123,3 +124,65 @@ test("Se creo y obtuvo el usuario correctamente", async() => {
     .get('/api/auth/users/' + responseParsed.user._id)
     expect(response1.statusCode).toEqual(200);
 })
+
+test("Se creo y actualizo el usuario correctamente", async() => {
+    const response = await request(app)
+    .post('/api/auth/register')
+    .send(
+        {
+            "firstName": "test99",
+            "lastName": "user",
+            "email": "testuser99@gmail.com",
+            "password": "testuser",
+            "sex": "male",
+            "age": "23",
+            "height": "1.80",
+            "weight": "70"
+        }
+    )
+    expect(response.statusCode).toEqual(200);
+
+    const responseParsed = JSON.parse(response.text);
+
+    const response1 = await request(app)
+    .delete('/api/auth/users/' + responseParsed.user._id)
+    expect(response1.statusCode).toEqual(200);
+})
+
+test("[LOGIN]Esto debe retornar un error 500", async () => {
+    const requestBody = {
+      email: 'test@example.com',
+      password: 'password123',
+    };
+
+    sinon.stub(usersModel, 'findOne').throws(new Error('Database error'));
+
+    const response = await request(app)
+      .post('/api/auth/login')
+      .send(requestBody);
+
+    expect(response.status).toEqual(500);
+
+    usersModel.findOne.restore();
+  });
+
+test('[REGISTER]Esto debe retornar un error 500"', async () => {
+    const requestBody = {
+        "firstName": "test",
+        "lastName": "user",
+        "email": "adminuser@admin.com",
+        "password": "adminuser",
+        "sex": "male",
+        "age": "23",
+        "height": "1.80",
+        "weight": "70"
+    };
+
+    sinon.stub(usersModel, 'create').throws(new Error('Database error'));
+
+    const response = await request(app)
+      .post('/api/auth/register')
+      .send(requestBody);
+
+    expect(response.status).toEqual(500);
+  });

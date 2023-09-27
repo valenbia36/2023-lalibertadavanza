@@ -3,6 +3,8 @@ const sinon = require('sinon');
 const app = require('../app');
 const { usersModel } = require("../models");
 
+let findOneStub;
+
 beforeAll(async () => {
     await usersModel.deleteMany({});
 });
@@ -155,7 +157,7 @@ test("[LOGIN]Esto debe retornar un error 500", async () => {
       password: 'password123',
     };
 
-    sinon.stub(usersModel, 'findOne').throws(new Error('Database error'));
+    findOneStub = sinon.stub(usersModel, 'findOne').throws(new Error('Database error'));
 
     const response = await request(app)
       .post('/api/auth/login')
@@ -186,3 +188,48 @@ test('[REGISTER]Esto debe retornar un error 500"', async () => {
 
     expect(response.status).toEqual(500);
   });
+
+test('[DELETE]Esto debe retornar un error 500"', async () => {
+
+    sinon.stub(usersModel, 'delete').throws(new Error('Database error'));
+
+    const response = await request(app)
+      .delete('/api/auth/users/1234')
+
+    expect(response.status).toEqual(500);
+});
+
+test('[GET USERS]Esto debe retornar un error 500"', async () => {
+
+    sinon.stub(usersModel, 'find').throws(new Error('Database error'));
+
+    const response = await request(app)
+      .get('/api/auth/users')
+
+    expect(response.status).toEqual(500);
+});
+
+test('[GET USER]Esto debe retornar un error 500"', async () => {
+
+    findOneStub.throws(new Error('Database error'));
+
+    const response = await request(app)
+      .get('/api/auth/users/1234')
+
+    expect(response.status).toEqual(500);
+});
+
+test('[UPDATE USER]Esto debe retornar un error 500"', async () => {
+
+    const requestBody = {
+        "firstName": "cambioDeNombre"
+    };
+
+    sinon.stub(usersModel, 'findOneAndUpdate').throws(new Error('Database error'));
+
+    const response = await request(app)
+      .put('/api/auth/users/1234')
+      .send(requestBody);
+
+    expect(response.status).toEqual(500);
+});

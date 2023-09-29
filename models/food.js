@@ -9,6 +9,12 @@ const foodSchema = new mongoose.Schema(
         calories:{
             type: String
         },
+        weight:{
+            type: String
+        },
+        category:{
+            type: String
+        },
     },
     {
         timestamps: true,

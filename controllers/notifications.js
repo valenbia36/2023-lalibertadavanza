@@ -1,7 +1,11 @@
 const { sendEmail } = require('../utils/handleEmail');
 
 const sendResetPasswordEmail = async (req, res) => {
-    const { email } = req.body;
+    const email = req.body.email;
+    const token = req.body.token;
+    console.log(email)
+    console.log(token)
+
 
     try {
         const send_to = email;
@@ -10,6 +14,7 @@ const sendResetPasswordEmail = async (req, res) => {
         const subject = "HeliApp - Reset Password";
         const message = `
             <p>Link: localhost:3000/resetPassword</p>
+            <p>Token:${token}</p>
         `;
 
         await sendEmail(subject, message, send_to, sent_from, reply_to);

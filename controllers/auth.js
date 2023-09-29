@@ -71,6 +71,16 @@ const getUser = async (req, res) => {
     }
 }
 
+const getUserByEmail = async (req, res) => {
+    try{
+        const data = await usersModel.findOne({'email': req.params.email});
+        res.send({data});    
+
+    } catch(e){
+        handleHttpError(res, 'ERROR_GET_USER_BY_EMAIL', 500);
+    }
+}
+
 const updateUser = async (req, res) => {
     try{
         const data = await usersModel.findOneAndUpdate(
@@ -78,6 +88,7 @@ const updateUser = async (req, res) => {
         );
         res.send({data});
     } catch(e){
+        console.log(e);
         handleHttpError(res, 'ERROR_UPDATE_USER', 500);
     }
 }
@@ -91,4 +102,4 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { registerController, loginController, getUsers, getUser, deleteUser, updateUser };
+module.exports = { registerController, loginController, getUsers, getUser, getUserByEmail, deleteUser, updateUser };

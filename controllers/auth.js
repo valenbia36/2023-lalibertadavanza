@@ -81,12 +81,16 @@ const getUserByEmail = async (req, res) => {
     }
 }
 
-const updateUser = async (req, res) => {
+const updateUserPassword = async (req, res) => {
     try{
+        const newPassword = req.body.password;
+        const password = await encrypt(newPassword);
+
         const data = await usersModel.findOneAndUpdate(
-            { "_id": req.params.id }, req.body
+            { "_id": req.params.id }, {"password": password}
         );
         res.send({data});
+        res.status(200)
     } catch(e){
         console.log(e);
         handleHttpError(res, 'ERROR_UPDATE_USER', 500);
@@ -102,4 +106,4 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { registerController, loginController, getUsers, getUser, getUserByEmail, deleteUser, updateUser };
+module.exports = { registerController, loginController, getUsers, getUser, getUserByEmail, deleteUser, updateUserPassword };

@@ -1,7 +1,6 @@
 const { mealModel } = require('../models');
 const { handleHttpError } = require('../utils/handleErrors');
 
-
 const getMeals = async (req, res) => {
     try{
         const user = req.user;

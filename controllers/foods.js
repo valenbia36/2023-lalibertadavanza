@@ -12,6 +12,15 @@ const getFoods = async (req, res) => {
     }
 }
 
+const getFoodsByCategory = async (req, res) => {
+    try{
+        const user = req.user;
+        const data = await categoryModel.find({name: req.params.category});
+        res.send({ data, user });        
+    } catch(e){
+        handleHttpError(res, 'ERROR_GET_CATEGORIES', 500);
+    }
+}
 
 const createFood = async (req, res) => {
     try{
@@ -22,4 +31,4 @@ const createFood = async (req, res) => {
     }
 }
 
-module.exports = { getFoods, createFood };
+module.exports = { getFoods, createFood, getFoodsByCategory};

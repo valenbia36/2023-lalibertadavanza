@@ -21,6 +21,23 @@ const getMealsByUserId = async (req, res) => {
     }
 }
 
+const getMealsByUserIdAndDate = async (req, res) => {
+    try {
+        const user = req.user;
+
+        // Construye el objeto de filtro con múltiples criterios
+        const filter = {
+            userId: req.params.id,
+            date: req.params.id, 
+        };
+
+        const data = await mealModel.find(filter);
+        res.send({ data, user });
+    } catch (e) {
+        handleHttpError(res, 'ERROR_GET_MEALS', 500);
+    }
+}
+
 const createMeal = async (req, res) => {
     try{
         const data = await mealModel.create(req.body);
@@ -30,4 +47,4 @@ const createMeal = async (req, res) => {
     }
 }
 
-module.exports = { getMeals, createMeal, getMealsByUserId };
+module.exports = { getMeals, createMeal, getMealsByUserId, getMealsByUserIdAndDate };

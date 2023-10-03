@@ -47,9 +47,21 @@ const createMeal = async (req, res) => {
   }
 };
 
+const updateMealById = async (req, res) => {
+  try {
+    const data = await mealModel.findOneAndUpdate(
+      { "_id": req.params.id }, req.body
+    );    
+    res.send({ data });
+  } catch (e) {
+    handleHttpError(res, "ERROR_UPDATE_MEAL", 500);
+  }
+};
+
 module.exports = {
   getMeals,
   createMeal,
   getMealsByUserId,
   getMealsByUserIdAndDate,
+  updateMealById
 };

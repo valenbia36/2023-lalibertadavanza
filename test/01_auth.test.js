@@ -95,10 +95,10 @@ test("Se creo y actualizo el usuario correctamente", async() => {
     const responseParsed = JSON.parse(response.text);
 
     const response1 = await request(app)
-    .put('/api/auth/users/' + responseParsed.user._id)
+    .put('/api/auth/users/updatePassword/' + responseParsed.user._id)
     .send(
         {
-            "firstName": "testNuevo"
+            "password": "newPassword"
         }
     )
     expect(response1.statusCode).toEqual(200);
@@ -228,7 +228,7 @@ test('[UPDATE USER]Esto debe retornar un error 500"', async () => {
     sinon.stub(usersModel, 'findOneAndUpdate').throws(new Error('Database error'));
 
     const response = await request(app)
-      .put('/api/auth/users/1234')
+      .put('/api/auth/users/updatePassword/1234')
       .send(requestBody);
 
     expect(response.status).toEqual(500);

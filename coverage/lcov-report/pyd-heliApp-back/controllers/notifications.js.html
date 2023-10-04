@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for pyd-heliApp-back/utils/handleJWT.js</title>
+    <title>Code coverage report for pyd-heliApp-back/controllers/notifications.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">pyd-heliApp-back/utils</a> handleJWT.js</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">pyd-heliApp-back/controllers</a> notifications.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">20% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>3/15</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">20% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>3/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -88,11 +88,28 @@
 <a name='L23'></a><a href='#L23'>23</a>
 <a name='L24'></a><a href='#L24'>24</a>
 <a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -102,43 +119,50 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span></td><td class="text"><pre class="prettyprint lang-js">const jsonWT = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET;
+<span class="cline-any cline-yes">4x</span></td><td class="text"><pre class="prettyprint lang-js">const { sendEmail } = require('../utils/handleEmail');
 &nbsp;
-const tokenSign = async (user) =&gt; {
-    const sign = await jsonWT.sign(
-        { 
-            _id: user._id,
-            role: user.role 
-        }, 
-        JWT_SECRET, 
-        { 
-            expiresIn: '1h' 
-        }
-    );
-    return sign;
+const sendResetPasswordEmail = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
+    const email = <span class="cstat-no" title="statement not covered" >req.body.email;</span>
+    const token = <span class="cstat-no" title="statement not covered" >req.body.token;</span>
+    const userName = <span class="cstat-no" title="statement not covered" >req.body.userName;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    try {</span>
+        const send_to = <span class="cstat-no" title="statement not covered" >email;</span>
+        const sent_from = <span class="cstat-no" title="statement not covered" >process.env.EMAIL_USER;</span>
+        const reply_to = <span class="cstat-no" title="statement not covered" >email;</span>
+        const subject = <span class="cstat-no" title="statement not covered" >"HeliApp - Reset Password";</span>
+&nbsp;
+        const message = <span class="cstat-no" title="statement not covered" >`</span>
+        &lt;p&gt;¡Hola ${userName}!&lt;/p&gt;
+        &lt;p&gt;Recibes este correo porque has solicitado restablecer tu contraseña en HeliApp.&lt;/p&gt;
+        &lt;p&gt;Para completar este proceso, sigue los siguientes pasos:&lt;/p&gt;
+        &lt;ol&gt;
+            &lt;li&gt;Haz clic en el siguiente enlace:&lt;/li&gt;
+            &lt;a href="www.localhost:3000/resetPassword"&gt;www.localhost:3000/resetPassword&lt;/a&gt;
+            &lt;li&gt;Ingresa el siguiente token cuando se te solicite: &lt;strong&gt;${token}&lt;/strong&gt;&lt;/li&gt;
+        &lt;/ol&gt;
+        &lt;p&gt;Si no has solicitado restablecer tu contraseña, puedes ignorar este correo.&lt;/p&gt;
+        `;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        await sendEmail(subject, message, send_to, sent_from, reply_to);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        res.status(200).json({ success: true, message: "Email Sent" });</span>
+    } catch (error) {
+<span class="cstat-no" title="statement not covered" >        res.status(500).json({ error: error.message });</span>
+    }
 }
 &nbsp;
-/* const verifyToken = async (tokenJWT) =&gt; {
-    try{
-        return jsonWT.verify(tokenJWT, JWT_SECRET);
-    } catch(e){
-        return null;
-    }
-} */
-&nbsp;
-module.exports = { tokenSign }</pre></td></tr></table></pre>
+module.exports = { sendResetPasswordEmail };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->

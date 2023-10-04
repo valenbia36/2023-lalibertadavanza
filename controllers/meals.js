@@ -58,10 +58,20 @@ const updateMealById = async (req, res) => {
   }
 };
 
+const deleteMealById = async (req, res) => {
+  try{
+    const data = await mealModel.delete({_id:req.params.id});;
+    res.send({data});
+  } catch(e){
+      handleHttpError(res, 'ERROR_DELETE_MEAL', 500);
+  }
+};
+
 module.exports = {
   getMeals,
   createMeal,
   getMealsByUserId,
   getMealsByUserIdAndDate,
-  updateMealById
+  updateMealById,
+  deleteMealById
 };

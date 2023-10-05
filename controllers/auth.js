@@ -93,6 +93,19 @@ const updateUserPassword = async (req, res) => {
         res.status(200)
     } catch(e){
         console.log(e);
+        handleHttpError(res, 'ERROR_UPDATE_USER_PASSWORD', 500);
+    }
+}
+
+const updateUser= async (req, res) => {
+    try{
+        const data = await usersModel.findOneAndUpdate(
+            { "_id": req.params.id }, req.body
+        );
+        res.send({data});
+        res.status(200)
+    } catch(e){
+        console.log(e);
         handleHttpError(res, 'ERROR_UPDATE_USER', 500);
     }
 }
@@ -106,4 +119,4 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { registerController, loginController, getUsers, getUser, getUserByEmail, deleteUser, updateUserPassword };
+module.exports = { registerController, loginController, getUsers, getUser, getUserByEmail, deleteUser, updateUserPassword, updateUser };

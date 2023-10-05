@@ -33,10 +33,7 @@ const getMealsByUserIdAndDate = async (req, res) => {
       date: { $regex: date },
     };
 
-    console.log(filter)
-
     const data = await mealModel.find(filter);
-    console.log(data)
     res.send({ data, user });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);

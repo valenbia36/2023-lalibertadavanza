@@ -25,13 +25,18 @@ const getMealsByUserIdAndDate = async (req, res) => {
   try {
     const user = req.user;
 
-    // Construye el objeto de filtro con múltiples criterios
+    // Construye una expresión regular para buscar la fecha en el formato "YYYY-MM-DD"
+    const date = new RegExp(`^${req.params.date}`);
+
     const filter = {
       userId: req.params.id,
-      date: req.params.date,
+      date: { $regex: date },
     };
 
+    console.log(filter)
+
     const data = await mealModel.find(filter);
+    console.log(data)
     res.send({ data, user });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);

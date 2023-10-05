@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for 2023-lalibertadavanza/controllers/foods.js</title>
+    <title>Code coverage report for pyd-heliApp-back/controllers/notifications.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">2023-lalibertadavanza/controllers</a> foods.js</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">pyd-heliApp-back/controllers</a> notifications.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">20% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>15/20</span>
+                <span class='fraction'>3/15</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/3</span>
+                <span class='fraction'>0/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">20% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>15/20</span>
+                <span class='fraction'>3/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -97,79 +97,79 @@
 <a name='L32'></a><a href='#L32'>32</a>
 <a name='L33'></a><a href='#L33'>33</a>
 <a name='L34'></a><a href='#L34'>34</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span></td><td class="text"><pre class="prettyprint lang-js">const { foodModel } = require('../models');
-const { handleHttpError } = require('../utils/handleErrors');
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span></td><td class="text"><pre class="prettyprint lang-js">const { sendEmail } = require('../utils/handleEmail');
 &nbsp;
+const sendResetPasswordEmail = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
+    const email = <span class="cstat-no" title="statement not covered" >req.body.email;</span>
+    const token = <span class="cstat-no" title="statement not covered" >req.body.token;</span>
+    const userName = <span class="cstat-no" title="statement not covered" >req.body.userName;</span>
 &nbsp;
-const getFoods = async (req, res) =&gt; {
-    try{
-        const user = req.user;
-        const data = await foodModel.find({});
-        res.send({ data, user });        
-    } catch(e){
-        handleHttpError(res, 'ERROR_GET_FOODS', 500);
+<span class="cstat-no" title="statement not covered" >    try {</span>
+        const send_to = <span class="cstat-no" title="statement not covered" >email;</span>
+        const sent_from = <span class="cstat-no" title="statement not covered" >process.env.EMAIL_USER;</span>
+        const reply_to = <span class="cstat-no" title="statement not covered" >email;</span>
+        const subject = <span class="cstat-no" title="statement not covered" >"HeliApp - Reset Password";</span>
+&nbsp;
+        const message = <span class="cstat-no" title="statement not covered" >`</span>
+        &lt;p&gt;¡Hola ${userName}!&lt;/p&gt;
+        &lt;p&gt;Recibes este correo porque has solicitado restablecer tu contraseña en HeliApp.&lt;/p&gt;
+        &lt;p&gt;Para completar este proceso, sigue los siguientes pasos:&lt;/p&gt;
+        &lt;ol&gt;
+            &lt;li&gt;Haz clic en el siguiente enlace:&lt;/li&gt;
+            &lt;a href="www.localhost:3000/resetPassword"&gt;www.localhost:3000/resetPassword&lt;/a&gt;
+            &lt;li&gt;Ingresa el siguiente token cuando se te solicite: &lt;strong&gt;${token}&lt;/strong&gt;&lt;/li&gt;
+        &lt;/ol&gt;
+        &lt;p&gt;Si no has solicitado restablecer tu contraseña, puedes ignorar este correo.&lt;/p&gt;
+        `;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        await sendEmail(subject, message, send_to, sent_from, reply_to);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        res.status(200).json({ success: true, message: "Email Sent" });</span>
+    } catch (error) {
+<span class="cstat-no" title="statement not covered" >        res.status(500).json({ error: error.message });</span>
     }
 }
 &nbsp;
-const getFoodsByCategory = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
-<span class="cstat-no" title="statement not covered" >    try{</span>
-        const user = <span class="cstat-no" title="statement not covered" >req.user;</span>
-        const data = <span class="cstat-no" title="statement not covered" >await categoryModel.find({name: req.params.category});</span>
-<span class="cstat-no" title="statement not covered" >        res.send({ data, user });        </span>
-    } catch(e){
-<span class="cstat-no" title="statement not covered" >        handleHttpError(res, 'ERROR_GET_CATEGORIES', 500);</span>
-    }
-}
-&nbsp;
-const createFood = async (req, res) =&gt; {
-    try{
-        const data = await foodModel.create(req.body);
-        res.send({data});
-    } catch(e){
-        handleHttpError(res, 'ERROR_CREATE_FOOD', 500);
-    }
-}
-&nbsp;
-module.exports = { getFoods, createFood, getFoodsByCategory};</pre></td></tr></table></pre>
+module.exports = { sendResetPasswordEmail };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-10-02T19:33:28.811Z
+                at 2023-10-04T19:30:04.076Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

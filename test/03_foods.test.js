@@ -3,6 +3,8 @@ const app = require('../app');
 const { foodModel } = require("../models");
 const sinon = require('sinon');
 
+let findStub;
+
 beforeAll(async () => {
     await foodModel.deleteMany({});
 });
@@ -13,7 +15,9 @@ test("Esto deberia retornar un 403", async() => {
     .send(
         {
             "name":"",
-            "calories":"10"
+            "calories":"10",
+            "weight": "10",
+            "category": "Carne"
         }
     )
     expect(response.statusCode).toEqual(403);
@@ -25,7 +29,9 @@ test("Se creo el alimento correctamente", async() => {
     .send(
         {
             "name": "Rucula",
-            "calories": "2"
+            "calories": "2",
+            "weight": "10",
+            "category": "Carne"
         }
     )
     expect(response.statusCode).toEqual(200);
@@ -38,7 +44,7 @@ test("Se obtuvieron los alimentos correctamente [200]", async() => {
 })
 
 it('[GET FOODS]Esto deberia retornar un 500', async () => {
-    sinon.stub(foodModel, 'find').throws(new Error('Database error'));
+    findStub = sinon.stub(foodModel, 'find').throws(new Error('Database error'));
 
     const response = await request(app)
       .get('/api/foods');
@@ -53,9 +59,20 @@ it('[CREATE FOOD]Esto deberia retornar un 500', async () => {
       .post('/api/foods')
       .send({
                 "name": "Rucula",
-                "calories": "2"
+                "calories": "2",
+                "weight": "10",
+                "category": "Carne"
             }
     );
+
+    expect(response.status).toEqual(500);
+});
+
+test('[GET FOODS BY CATEGORY]Esto deberia retornar un 500', async () => {
+    findStub.throws(new Error('Database error'));
+
+    const response = await request(app)
+    .get('/api/foods/category/Verdura');
 
     expect(response.status).toEqual(500);
 });

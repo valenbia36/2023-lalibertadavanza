@@ -50,8 +50,9 @@ const createMeal = async (req, res) => {
 const updateMealById = async (req, res) => {
   try {
     const data = await mealModel.findOneAndUpdate(
-      { "_id": req.params.id }, req.body
-    );    
+      { _id: req.params.id },
+      req.body
+    );
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_UPDATE_MEAL", 500);
@@ -59,11 +60,31 @@ const updateMealById = async (req, res) => {
 };
 
 const deleteMealById = async (req, res) => {
-  try{
-    const data = await mealModel.delete({_id:req.params.id});;
-    res.send({data});
-  } catch(e){
-      handleHttpError(res, 'ERROR_DELETE_MEAL', 500);
+  try {
+    const data = await mealModel.delete({ _id: req.params.id });
+    res.send({ data });
+  } catch (e) {
+    handleHttpError(res, "ERROR_DELETE_MEAL", 500);
+  }
+};
+
+const getCaloriesByMonth = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const firstDayOfMonth = moment().startOf("month").toDate();
+    const currentDate = moment().toDate();
+    const meals = await Meal.find({
+      userId: userId,
+      createdAt: { $gte: firstDayOfMonth, $lte: currentDate },
+    });
+
+    let totalCalories = 0;
+    meals.forEach((meal) => {
+      totalCalories += meal.calories;
+    });
+    res.json({ totalCalories });
+  } catch (e) {
+    handleHttpError(res, "ERROR_GET_CALORIES", 500);
   }
 };
 
@@ -73,5 +94,6 @@ module.exports = {
   getMealsByUserId,
   getMealsByUserIdAndDate,
   updateMealById,
-  deleteMealById
+  deleteMealById,
+  getCaloriesByMonth,
 };

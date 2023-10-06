@@ -72,20 +72,34 @@ const deleteMealById = async (req, res) => {
 
 const getCaloriesByMonth = async (req, res) => {
   try {
-    const userId = req.params.userId;
-    const firstDayOfMonth = moment().startOf("month").toDate();
-    const currentDate = moment().toDate();
-    const meals = await Meal.find({
-      userId: userId,
-      createdAt: { $gte: firstDayOfMonth, $lte: currentDate },
-    });
+    const userId = req.params.id;
+    // Año y mes específicos
+    const year = 2023;
+    const month = req.params.month; // 1 para enero, 2 para febrero, 3 para marzo, etc.
 
-    let totalCalories = 0;
-    meals.forEach((meal) => {
-      totalCalories += meal.calories;
+    // Crear una expresión regular para buscar fechas que coincidan con el año y mes específicos
+    const regexPattern = new RegExp(
+      `^${year}-${month.toString().padStart(2, "0")}-`
+    );
+
+    const meals = await mealModel.find({
+      date: {
+        $regex: regexPattern,
+      },
     });
-    res.json({ totalCalories });
+    const caloriesByDay = {};
+
+    meals.forEach((meal) => {
+      const mealDate = meal.date; // Extract the date portion
+      if (!caloriesByDay[mealDate]) {
+        caloriesByDay[mealDate] = 0;
+      }
+      caloriesByDay[mealDate] += meal.calories;
+    });
+    //res.json({ totalCalories });
+    res.send({ caloriesByDay });
   } catch (e) {
+    console.log(e);
     handleHttpError(res, "ERROR_GET_CALORIES", 500);
   }
 };

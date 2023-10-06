@@ -17,6 +17,6 @@ router.get("/user/:id/date/:date", getMealsByUserIdAndDate);
 router.post("/", validatorCreateMeal, createMeal);
 router.put("/:id", updateMealById);
 router.delete("/:id", deleteMealById);
-router.get("/calories/:id", getCaloriesByMonth);
+router.get("/user/:id/month/:month", getCaloriesByMonth);
 
 module.exports = router;

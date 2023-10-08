@@ -119,10 +119,10 @@ const getCaloriesByMonth = async (req, res) => {
       caloriesMap[item.date] = item.calorias;
     });
     
-    // Crear un arreglo con todos los días del mes y establecer 0 para los que no estén presentes
-    const daysInMonth = 31; // Cambia esto según el mes
+   
+    const daysInMonth = (new Date(2023,month,0)).getDate(); // ultimo dia del mes
     const resultWithAllDays = [];
-    
+     // Crear un arreglo con todos los días del mes y establecer 0 para los que no estén presentes
     for (let day = 1; day <= daysInMonth; day++) {
       const date = day.toString().padStart(2, '0'); // Formato "dd"
       const calories = caloriesMap[date] || 0; // Establecer 0 si la fecha no está en el mapa

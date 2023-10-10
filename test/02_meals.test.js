@@ -45,6 +45,158 @@ test("Se creo la comida correctamente", async () => {
   expect(response.statusCode).toEqual(200);
 });
 
+test("[DELETE MEAL] Esto deberia retornar un 200", async () => {
+  const response = await request(app)
+    .post("/api/meals")
+    .send({
+      name: "Carne con papas",
+      foods: [
+        {
+          name: "Papa",
+          calories: "10",
+          quantity: 1,
+        },
+        {
+          name: "Lomo",
+          calories: "20",
+          quantity: 1,
+        },
+      ],
+      date: "20/10/1998",
+      hour: "20:15",
+      calories: 200,
+      userId: "987654321",
+    });
+
+    const responseParsed = JSON.parse(response.text);
+    const mealId = responseParsed.data._id;
+
+    const response1 = await request(app)
+    .delete("/api/meals/" + mealId);
+    expect(response1.statusCode).toEqual(200);
+});
+
+test("[UPDATE MEAL] Esto deberia retornar un 200", async () => {
+  const response = await request(app)
+    .post("/api/meals")
+    .send({
+      name: "Carne con papas",
+      foods: [
+        {
+          name: "Papa",
+          calories: "10",
+          quantity: 1,
+        },
+        {
+          name: "Lomo",
+          calories: "20",
+          quantity: 1,
+        },
+      ],
+      date: "20/10/1998",
+      hour: "20:15",
+      calories: 200,
+      userId: "987654321",
+    });
+
+    const responseParsed = JSON.parse(response.text);
+    const mealId = responseParsed.data._id;
+
+    const response1 = await request(app)
+    .put("/api/meals/" + mealId)
+    .send({
+      name: "Carne con papas modificada"
+    });
+    expect(response1.statusCode).toEqual(200);
+});
+
+test("[DELETE MEAL] Esto deberia retornar un 200", async () => {
+  const response = await request(app)
+    .post("/api/meals")
+    .send({
+      name: "Carne con papas",
+      foods: [
+        {
+          name: "Papa",
+          calories: "10",
+          quantity: 1,
+        },
+        {
+          name: "Lomo",
+          calories: "20",
+          quantity: 1,
+        },
+      ],
+      date: "20/10/1998",
+      hour: "20:15",
+      calories: 200,
+      userId: "987654321",
+    });
+
+    const responseParsed = JSON.parse(response.text);
+    const mealId = responseParsed.data._id;
+
+    const response1 = await request(app)
+    .delete("/api/meals/" + mealId);
+    expect(response1.statusCode).toEqual(200);
+});
+
+test("[GET MEALS BY USER ID AND DATE] Esto deberia retornar un 200", async () => {
+  const response = await request(app)
+    .post("/api/meals")
+    .send({
+      name: "Carne con papas",
+      foods: [
+        {
+          name: "Papa",
+          calories: "10",
+          quantity: 1,
+        },
+        {
+          name: "Lomo",
+          calories: "20",
+          quantity: 1,
+        },
+      ],
+      date: "2023-10-04T10:00:00.000Z",
+      hour: "20:15",
+      calories: 200,
+      userId: "987654321",
+    });
+
+    const response1 = await request(app)
+    .get("/api/meals/user/987654321/date/2023-10-04T10:00:00.000Z")
+    expect(response1.statusCode).toEqual(200);
+});
+
+test("[GET CALORIES BY USER ID AND MONTH] Esto deberia retornar un 200", async () => {
+  const response = await request(app)
+    .post("/api/meals")
+    .send({
+      name: "Carne con papas",
+      foods: [
+        {
+          name: "Papa",
+          calories: "10",
+          quantity: 1,
+        },
+        {
+          name: "Lomo",
+          calories: "20",
+          quantity: 1,
+        },
+      ],
+      date: "2023-10-04T10:00:00.000Z",
+      hour: "20:15",
+      calories: 200,
+      userId: "987654321",
+    });
+
+    const response1 = await request(app)
+    .get("/api/meals/user/987654321/month/10")
+    expect(response1.statusCode).toEqual(200);
+});
+
 test("Esto deberia retornar un 200", async () => {
   const response = await request(app).get("/api/meals");
   expect(response.statusCode).toEqual(200);

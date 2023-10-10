@@ -127,6 +127,56 @@ test("Se creo y obtuvo el usuario correctamente", async() => {
     expect(response1.statusCode).toEqual(200);
 })
 
+test("Se creo y obtuvo el usuario por email correctamente", async() => {
+    const response = await request(app)
+    .post('/api/auth/register')
+    .send(
+        {
+            "firstName": "test",
+            "lastName": "user",
+            "email": "testuser999@gmail.com",
+            "password": "testuser",
+            "sex": "male",
+            "age": "23",
+            "height": "1.80",
+            "weight": "70"
+        }
+    )
+    expect(response.statusCode).toEqual(200);
+
+    const response1 = await request(app)
+    .get('/api/auth/users/email/testuser999@gmail.com')
+    expect(response1.statusCode).toEqual(200);
+})
+
+test("Se creo y obtuvo el usuario por email correctamente", async() => {
+    const response = await request(app)
+    .post('/api/auth/register')
+    .send(
+        {
+            "firstName": "test",
+            "lastName": "user",
+            "email": "testuser9999@gmail.com",
+            "password": "testuser",
+            "sex": "male",
+            "age": "23",
+            "height": "1.80",
+            "weight": "70"
+        }
+    )
+    expect(response.statusCode).toEqual(200);
+
+    const responseParsed = JSON.parse(response.text);
+
+    const response1 = await request(app)
+    .put('/api/auth/users/' + responseParsed.user._id)
+    .send({
+        "firstName": "nuevo",
+        "lastName": "nombre",
+    })
+    expect(response1.statusCode).toEqual(200);
+})
+
 test("Se creo y actualizo el usuario correctamente", async() => {
     const response = await request(app)
     .post('/api/auth/register')

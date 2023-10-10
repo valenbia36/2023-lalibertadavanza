@@ -110,6 +110,18 @@ test("[UPDATE MEAL] Esto deberia retornar un 200", async () => {
     expect(response1.statusCode).toEqual(200);
 });
 
+test("[UPDATE MEAL] Esto deberia retornar un 200", async () => {
+
+  sinon.stub(mealModel, "findOneAndUpdate").throws(new Error("Database error"));
+
+  const response = await request(app)
+    .put("/api/meals/1234")
+    .send({
+      name: "Carne con papas modificada"
+    });
+    expect(response.statusCode).toEqual(500);
+});
+
 test("[DELETE MEAL] Esto deberia retornar un 200", async () => {
   const response = await request(app)
     .post("/api/meals")
@@ -139,6 +151,15 @@ test("[DELETE MEAL] Esto deberia retornar un 200", async () => {
     const response1 = await request(app)
     .delete("/api/meals/" + mealId);
     expect(response1.statusCode).toEqual(200);
+});
+
+test("[DELETE MEAL] Esto deberia retornar un 500", async () => {
+
+  sinon.stub(mealModel, "delete").throws(new Error("Database error"));
+
+  const response = await request(app)
+    .delete("/api/meals/1234");
+    expect(response.statusCode).toEqual(500);
 });
 
 test("[GET MEALS BY USER ID AND DATE] Esto deberia retornar un 200", async () => {

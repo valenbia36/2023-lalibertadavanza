@@ -29,8 +29,31 @@ test("Se creo la categoria correctamente", async() => {
     expect(response.statusCode).toEqual(200);
 })
 
-test("Se obtuvieron los alimentos correctamente [200]", async() => {
+test("Se obtuvieron las categorias correctamente [200]", async() => {
     const response = await request(app)
     .get('/api/category')
     expect(response.statusCode).toEqual(200);
+})
+
+test("[CREATE CATEGORY] Esto debe retornar un error 500", async() => {
+
+    sinon.stub(categoryModel, 'create').throws(new Error('Database error'));
+
+    const response = await request(app)
+    .post('/api/category')
+    .send(
+        {
+            "name": "Verduras"
+        }
+    )
+    expect(response.statusCode).toEqual(500);
+})
+
+test("[GET CATEGORIES] Esto debe retornar un error 500", async() => {
+
+    sinon.stub(categoryModel, 'find').throws(new Error('Database error'));
+
+    const response = await request(app)
+    .get('/api/category')
+    expect(response.statusCode).toEqual(500);
 })

@@ -4,6 +4,7 @@ const app = require('../app');
 const { usersModel } = require("../models");
 
 let findOneStub;
+let findOneAndUpdateStub;
 
 beforeAll(async () => {
     await usersModel.deleteMany({});
@@ -218,7 +219,7 @@ test("[LOGIN]Esto debe retornar un error 500", async () => {
     usersModel.findOne.restore();
   });
 
-test('[REGISTER]Esto debe retornar un error 500"', async () => {
+test('[REGISTER]Esto debe retornar un error 500', async () => {
     const requestBody = {
         "firstName": "test",
         "lastName": "user",
@@ -239,7 +240,7 @@ test('[REGISTER]Esto debe retornar un error 500"', async () => {
     expect(response.status).toEqual(500);
   });
 
-test('[DELETE]Esto debe retornar un error 500"', async () => {
+test('[DELETE]Esto debe retornar un error 500', async () => {
 
     sinon.stub(usersModel, 'delete').throws(new Error('Database error'));
 
@@ -259,7 +260,7 @@ test('[GET USERS]Esto debe retornar un error 500"', async () => {
     expect(response.status).toEqual(500);
 });
 
-test('[GET USER]Esto debe retornar un error 500"', async () => {
+test('[GET USER BY ID]Esto debe retornar un error 500"', async () => {
 
     findOneStub.throws(new Error('Database error'));
 
@@ -269,13 +270,36 @@ test('[GET USER]Esto debe retornar un error 500"', async () => {
     expect(response.status).toEqual(500);
 });
 
+test('[GET USER BY EMAIL]Esto debe retornar un error 500"', async () => {
+
+    sinon.stub(usersModel, 'findOne').throws(new Error('Database error'));
+
+    const response = await request(app)
+      .get('/api/auth/users/email/1234')
+
+    expect(response.status).toEqual(500);
+});
+
 test('[UPDATE USER]Esto debe retornar un error 500"', async () => {
 
+    findOneAndUpdateStub = sinon.stub(usersModel, 'findOneAndUpdate').throws(new Error('Database error'));
+
+    const response = await request(app)
+      .put('/api/auth/users/1234')
+      .send({
+        "firstName": "test"
+      })
+
+    expect(response.status).toEqual(500);
+});
+
+test('[UPDATE PASSWORD]Esto debe retornar un error 500"', async () => {
+
     const requestBody = {
-        "firstName": "cambioDeNombre"
+        "password": "cambioDePassword"
     };
 
-    sinon.stub(usersModel, 'findOneAndUpdate').throws(new Error('Database error'));
+    findOneAndUpdateStub.throws(new Error('Database error'));
 
     const response = await request(app)
       .put('/api/auth/users/updatePassword/1234')

@@ -8,6 +8,12 @@ const validatorCreateFood = [
     check('calories')
     .exists()
     .notEmpty(),
+    check('weight')
+    .exists()
+    .notEmpty(),
+    check('category')
+    .exists()
+    .notEmpty(),
     (req, res, next) => {
         return validateResults(req, res, next);
     }

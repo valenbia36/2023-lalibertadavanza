@@ -97,16 +97,18 @@ const updateUserPassword = async (req, res) => {
     }
 }
 
-const updateUser= async (req, res) => {
+const updateUser = async (req, res) => {
     try{
         const data = await usersModel.findOneAndUpdate(
             { "_id": req.params.id }, req.body
         );
         res.send({data});
         res.status(200)
+        return 200;
     } catch(e){
         console.log(e);
         handleHttpError(res, 'ERROR_UPDATE_USER', 500);
+        return 500;
     }
 }
 

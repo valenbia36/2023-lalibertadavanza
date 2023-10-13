@@ -10,7 +10,7 @@
     "mongoose": "^7.5.0",
     "mongoose-delete": "^1.0.1",
     "mongose": "^0.0.2-security",
-    "nodemailer": "^6.9.5",
+    "nodemailer": "^6.9.6",
     "sinon": "^16.0.0"
   },
   "name": "pyd-heliapp-back",

@@ -25,7 +25,6 @@ const getMealsByUserIdAndDate = async (req, res) => {
   try {
     const user = req.user;
 
-    // Construye una expresión regular para buscar la fecha en el formato "YYYY-MM-DD"
     const date = new RegExp(`^${req.params.date}`);
 
     const filter = {
@@ -73,11 +72,9 @@ const deleteMealById = async (req, res) => {
 const getCaloriesByMonth = async (req, res) => {
   try {
     const userId = req.params.id;
-    // Año y mes específicos
     const year = 2023;
-    const month = req.params.month; // 1 para enero, 2 para febrero, 3 para marzo, etc.
+    const month = req.params.month;
 
-    // Crear una expresión regular para buscar fechas que coincidan con el año y mes específicos
     const regexPattern = new RegExp(
       `^${year}-${month.toString().padStart(2, "0")}-`
     );
@@ -91,19 +88,16 @@ const getCaloriesByMonth = async (req, res) => {
 
     const data = {};
     meals.forEach((item) => {
-      const date = item.date.substring(8, 10); // Extraer el día de la fecha
+      const date = item.date.substring(8, 10);
       const calories = item.calories;
 
-      // Si la fecha ya existe en el objeto, sumar las calorías
       if (data[date]) {
         data[date] += calories;
       } else {
-        // Si la fecha no existe, crear una nueva entrada en el objeto
         data[date] = calories;
       }
     });
 
-    // Convertir el objeto en un arreglo de objetos con el formato deseado
     const result = Object.entries(data).map(([date, calories]) => ({
       date,
       calorias: calories,
@@ -120,12 +114,12 @@ const getCaloriesByMonth = async (req, res) => {
       caloriesMap[item.date] = item.calorias;
     });
 
-    const daysInMonth = new Date(2023, month, 0).getDate(); // ultimo dia del mes
+    const daysInMonth = new Date(2023, month, 0).getDate();
     const resultWithAllDays = [];
-    // Crear un arreglo con todos los días del mes y establecer 0 para los que no estén presentes
+
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = day.toString().padStart(2, "0"); // Formato "dd"
-      const calories = caloriesMap[date] || 0; // Establecer 0 si la fecha no está en el mapa
+      const date = day.toString().padStart(2, "0");
+      const calories = caloriesMap[date] || 0;
       resultWithAllDays.push({ date, calorias: calories });
     }
     res.send({ resultWithAllDays });

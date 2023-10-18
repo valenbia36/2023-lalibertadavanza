@@ -8,6 +8,7 @@ const {
   updateMealById,
   deleteMealById,
   getCaloriesByMonth,
+  getCaloriesBetweenDays
 } = require("../controllers/meals");
 const { validatorCreateMeal } = require("../validators/meals");
 
@@ -18,5 +19,6 @@ router.post("/", validatorCreateMeal, createMeal);
 router.put("/:id", updateMealById);
 router.delete("/:id", deleteMealById);
 router.get("/user/:id/month/:month", getCaloriesByMonth);
+router.get("/user/:id/startDate/:startDate/endDate/:endDate",getCaloriesBetweenDays)
 
 module.exports = router;

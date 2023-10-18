@@ -129,6 +129,31 @@ const getCaloriesByMonth = async (req, res) => {
   }
 };
 
+const getCaloriesBetweenDays = async (req, res) => {
+  try {
+    const userId = req.params.id; 
+    const startDate =  req.params.startDate;
+    const endDate =  req.params.endDate;
+    const filter = {
+      userId: userId,
+      date: { $gte: startDate, $lte: endDate },
+    };
+
+    const result = await mealModel.find(filter);
+
+    //Suma las calorías
+    let totalCalorias = 0;
+    result.forEach((record) => {
+      totalCalorias += record.calories;
+    });
+
+    res.send({ totalCalorias });
+  } catch (e) {
+    console.log(e);
+    handleHttpError(res, "ERROR_GET_CALORIES", 500);
+  }
+};
+
 module.exports = {
   getMeals,
   createMeal,
@@ -137,4 +162,5 @@ module.exports = {
   updateMealById,
   deleteMealById,
   getCaloriesByMonth,
+  getCaloriesBetweenDays
 };

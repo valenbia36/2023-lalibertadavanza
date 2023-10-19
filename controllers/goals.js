@@ -16,7 +16,6 @@ const getActiveGoalsByUserId = async (req, res) => {
     const filteredData = data.filter(
       (item) => new Date() >= item.startDate && new Date() <= item.endDate
     );
-    console.log(filteredData);
     res.send({ filteredData });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_GOALS_BY_USER_ID", 500);

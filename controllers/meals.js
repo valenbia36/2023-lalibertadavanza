@@ -131,9 +131,9 @@ const getCaloriesByMonth = async (req, res) => {
 
 const getCaloriesBetweenDays = async (req, res) => {
   try {
-    const userId = req.params.id; 
-    const startDate =  req.params.startDate;
-    const endDate =  req.params.endDate;
+    const userId = req.params.id;
+    const startDate = req.params.startDate;
+    const endDate = req.params.endDate;
     const filter = {
       userId: userId,
       date: { $gte: startDate, $lte: endDate },
@@ -141,7 +141,6 @@ const getCaloriesBetweenDays = async (req, res) => {
 
     const result = await mealModel.find(filter);
 
-    //Suma las calorías
     let totalCalorias = 0;
     result.forEach((record) => {
       totalCalorias += record.calories;
@@ -162,5 +161,5 @@ module.exports = {
   updateMealById,
   deleteMealById,
   getCaloriesByMonth,
-  getCaloriesBetweenDays
+  getCaloriesBetweenDays,
 };

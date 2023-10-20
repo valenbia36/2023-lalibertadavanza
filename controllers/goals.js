@@ -1,4 +1,4 @@
-const { goalModel } = require("../models");
+const { goalModel,mealModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
 
 const getGoalsByUserId = async (req, res) => {
@@ -21,6 +21,38 @@ const getActiveGoalsByUserId = async (req, res) => {
     handleHttpError(res, "ERROR_GET_GOALS_BY_USER_ID", 500);
   }
 };
+
+const getGoalsByUserWithProgress = async(req,res) => {
+  try {
+    const goals = await goalModel.find({ userId: req.params.userId });
+
+    const goalsWithProgress = await Promise.all(goals.map(async (item) => {
+      const userId = item.userId;
+      const startDate = item.startDate.toISOString();
+      const endDate = item.endDate.toISOString();
+      const filter = {
+        userId: userId,
+        date: { $gte: startDate, $lte: endDate },
+      };
+    
+      const result = await mealModel.find(filter);
+      let totalCalorias = 0;
+      result.forEach((record) => {
+        totalCalorias += record.calories;
+      });
+    
+      const newItem = {
+        ...item.toObject(),
+        totalCalorias: totalCalorias,
+      };
+    
+      return newItem;
+    }));
+    res.send({ goalsWithProgress });
+  } catch (e) {
+    handleHttpError(res, "ERROR_GET_GOALS_BY_USER_ID", 500);
+  }
+}
 
 const createGoal = async (req, res) => {
   try {
@@ -58,4 +90,5 @@ module.exports = {
   updateGoal,
   deleteGoal,
   getActiveGoalsByUserId,
+  getGoalsByUserWithProgress
 };

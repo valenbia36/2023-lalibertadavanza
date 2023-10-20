@@ -14,7 +14,7 @@ const getActiveGoalsByUserId = async (req, res) => {
   try {
     const data = await goalModel.find({ userId: req.params.userId });
     const filteredData = data.filter(
-      (item) => new Date() >= item.startDate && new Date() <= item.endDate
+      (item) => new Date().setHours(0,0,0,0) >= item.startDate && new Date().setHours(0,0,0,0) <= item.endDate
     );
     res.send({ filteredData });
   } catch (e) {

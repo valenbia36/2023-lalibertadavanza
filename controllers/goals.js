@@ -14,7 +14,7 @@ const getActiveGoalsByUserId = async (req, res) => {
   try {
     const data = await goalModel.find({ userId: req.params.userId });
     const filteredData = data.filter(
-      (item) => new Date().setHours(0,0,0,0) >= item.startDate && new Date().setHours(0,0,0,0) <= item.endDate
+      (item) => new Date() >= item.startDate && new Date() <= item.endDate
     );
     res.send({ filteredData });
   } catch (e) {
@@ -25,7 +25,6 @@ const getActiveGoalsByUserId = async (req, res) => {
 const getGoalsByUserWithProgress = async(req,res) => {
   try {
     const goals = await goalModel.find({ userId: req.params.userId });
-
     const goalsWithProgress = await Promise.all(goals.map(async (item) => {
       const userId = item.userId;
       const startDate = item.startDate.toISOString();

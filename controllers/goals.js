@@ -22,6 +22,25 @@ const getActiveGoalsByUserId = async (req, res) => {
   }
 };
 
+const calculateGoalStatus = (goal) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const goalStartDate = new Date(goal.startDate);
+  goalStartDate.setHours(0, 0, 0, 0);
+
+  const goalEndDate = new Date(goal.endDate);
+  goalEndDate.setHours(0, 0, 0, 0);
+
+  if (today < goalStartDate) {
+    return "Not started";
+  } else if (today >= goalStartDate && today <= goalEndDate) {
+    return "In progress";
+  } else {
+    return "Expired";
+  }
+};
+
 const getGoalsByUserWithProgress = async(req,res) => {
   try {
     const goals = await goalModel.find({ userId: req.params.userId });
@@ -39,10 +58,13 @@ const getGoalsByUserWithProgress = async(req,res) => {
       result.forEach((record) => {
         totalCalorias += record.calories;
       });
+
+      const state = calculateGoalStatus(item)
     
       const newItem = {
         ...item.toObject(),
         totalCalorias: totalCalorias,
+        state : state
       };
     
       return newItem;

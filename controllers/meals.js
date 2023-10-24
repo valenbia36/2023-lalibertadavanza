@@ -91,8 +91,6 @@ const getCaloriesByDays = async (req, res) => {
   
       fechaActual.setDate(fechaActual.getDate() + 1)
     }
-  
-    console.log(fechasIntermedias);
 
     const meals = await mealModel.find(filter);
     const dataOfMeals = {};

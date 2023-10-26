@@ -10,6 +10,7 @@ test("[SEND NOTIFICATION OK] Should send a reset password email successfully", a
       email: "user@example.com",
       token: "sampleToken",
       userName: "John Doe",
+      url: "url"
     });
 
   expect(response.statusCode).toEqual(200);

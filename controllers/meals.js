@@ -25,7 +25,6 @@ const getMealsByUserIdAndDate = async (req, res) => {
   try {
     const user = req.user;
 
-    // Construye una expresión regular para buscar la fecha en el formato "YYYY-MM-DD"
     const date = new RegExp(`^${req.params.date}`);
 
     const filter = {
@@ -70,70 +69,88 @@ const deleteMealById = async (req, res) => {
   }
 };
 
-const getCaloriesByMonth = async (req, res) => {
+const getCaloriesByDays = async (req, res) => {
   try {
     const userId = req.params.id;
-    // Año y mes específicos
-    const year = 2023;
-    const month = req.params.month; // 1 para enero, 2 para febrero, 3 para marzo, etc.
-
-    // Crear una expresión regular para buscar fechas que coincidan con el año y mes específicos
-    const regexPattern = new RegExp(
-      `^${year}-${month.toString().padStart(2, "0")}-`
-    );
-
-    const meals = await mealModel.find({
+    const startDate = new Date(req.params.startDate).toISOString();
+    const endDate = new Date(req.params.endDate).toISOString();
+    const filter = {
       userId: userId,
-      date: {
-        $regex: regexPattern,
-      },
-    });
+      date: { $gte: startDate, $lte: endDate },
+    };
 
-    const data = {};
+    const fechaFin = new Date(endDate);
+    const fechasIntermedias = [];
+    let fechaActual = new Date(startDate);
+  
+    while (fechaActual < fechaFin) {
+      fechasIntermedias.push({
+        date: fechaActual.toISOString(),
+        calories: 0
+      });
+  
+      fechaActual.setDate(fechaActual.getDate() + 1)
+    }
+
+    const meals = await mealModel.find(filter);
+    const dataOfMeals = {};
     meals.forEach((item) => {
-      const date = item.date.substring(8, 10); // Extraer el día de la fecha
+      const date = item.date;
       const calories = item.calories;
 
-      // Si la fecha ya existe en el objeto, sumar las calorías
-      if (data[date]) {
-        data[date] += calories;
+      if (dataOfMeals[date]) {
+        dataOfMeals[date] += calories;
       } else {
-        // Si la fecha no existe, crear una nueva entrada en el objeto
-        data[date] = calories;
+        dataOfMeals[date] = calories;
       }
     });
 
-    // Convertir el objeto en un arreglo de objetos con el formato deseado
-    const result = Object.entries(data).map(([date, calories]) => ({
-      date,
-      calorias: calories,
-    }));
-
-    result.sort((a, b) => {
-      const dateA = parseInt(a.date, 10);
-      const dateB = parseInt(b.date, 10);
-
-      return dateA - dateB;
-    });
-    const caloriesMap = {};
-    result.forEach((item) => {
-      caloriesMap[item.date] = item.calorias;
-    });
-
-    const daysInMonth = new Date(2023, month, 0).getDate(); // ultimo dia del mes
-    const resultWithAllDays = [];
-    // Crear un arreglo con todos los días del mes y establecer 0 para los que no estén presentes
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = day.toString().padStart(2, "0"); // Formato "dd"
-      const calories = caloriesMap[date] || 0; // Establecer 0 si la fecha no está en el mapa
-      resultWithAllDays.push({ date, calorias: calories });
+    function obtenerFechaSinHora(date) {
+      return date.split('T')[0];
     }
-    res.send({ resultWithAllDays });
+    
+    // Recorre el segundo arreglo y actualiza el primero si encuentra una fecha coincidente (sin la hora)
+    for (const date in dataOfMeals) {
+      const calories = dataOfMeals[date];
+      const fechaSinHora = obtenerFechaSinHora(date);
+      const index = fechasIntermedias.findIndex(item => obtenerFechaSinHora(item.date) === fechaSinHora);
+      if (index !== -1) {
+        fechasIntermedias[index].calories = calories;
+      }
+    }
+
+    res.send({ fechasIntermedias });
   } catch (e) {
     console.log(e);
     handleHttpError(res, "ERROR_GET_CALORIES", 500);
   }
 };
+
+const getCaloriesBetweenDays = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const startDate = req.params.startDate;
+    const endDate = req.params.endDate;
+    const filter = {
+      userId: userId,
+      date: { $gte: startDate, $lte: endDate },
+    };
+
+    const result = await mealModel.find(filter);
+
+    let totalCalorias = 0;
+    result.forEach((record) => {
+      totalCalorias += record.calories;
+    });
+
+    res.send({ totalCalorias });
+  } catch (e) {
+    console.log(e);
+    handleHttpError(res, "ERROR_GET_CALORIES", 500);
+  }
+};
+
+
 
 module.exports = {
   getMeals,
@@ -142,5 +159,6 @@ module.exports = {
   getMealsByUserIdAndDate,
   updateMealById,
   deleteMealById,
-  getCaloriesByMonth,
+  getCaloriesBetweenDays,
+  getCaloriesByDays,
 };

@@ -1,6 +1,7 @@
 const { sendEmail } = require('../utils/handleEmail');
 const { usersModel } = require("../models");
 const { updateUser } = require('../controllers/auth');
+const { handleHttpError } = require('../utils/handleErrors');
 
 const sendResetPasswordEmail = async (req, res) => {
     const email = req.body.email;

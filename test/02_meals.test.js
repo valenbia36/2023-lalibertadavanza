@@ -214,7 +214,7 @@ test("[GET CALORIES BY USER ID AND MONTH] Esto deberia retornar un 200", async (
     });
 
     const response1 = await request(app)
-    .get("/api/meals/user/987654321/month/10")
+    .get("/api/meals/user/987654321/between/2022-10-18/2023-10-19")
     expect(response1.statusCode).toEqual(200);
 });
 

@@ -8,6 +8,7 @@ const sendResetPasswordEmail = async (req, res) => {
     const token = req.body.token;
     const userName = req.body.userName;
     const userId = req.body.userId;
+    const url = req.body.url;
 
     try {
         const reqUpdateUser = {
@@ -41,7 +42,7 @@ const sendResetPasswordEmail = async (req, res) => {
             <p>Para completar este proceso, sigue los siguientes pasos:</p>
             <ol>
                 <li>Haz clic en el siguiente enlace:</li>
-                <a href="www.localhost:3000/resetPassword">www.localhost:3000/resetPassword</a>
+                <a href="${url}/resetPassword">${url}/resetPassword</a>
                 <li>Ingresa el siguiente token cuando se te solicite: <strong>${token}</strong></li>
             </ol>
             <p>Si no has solicitado restablecer tu contraseña, puedes ignorar este correo.</p>
@@ -62,7 +63,6 @@ const validateToken = async(req, res) =>{
 
     try{
         const data = await usersModel.findOne({'secretToken': req.params.token});
-        console.log(JSON.stringify(data))
         res.send({data});    
     } catch(e){
         handleHttpError(res, 'ERROR_VALIDATE_TOKEN', 500);

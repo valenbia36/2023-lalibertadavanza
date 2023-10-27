@@ -228,6 +228,34 @@ test("Esto deberia retornar un 200", async () => {
   expect(response.statusCode).toEqual(200);
 });
 
+test("[GET CALORIES BY USER ID BETWEEN DAYS] Esto deberia retornar un 200", async () => {
+  const response = await request(app)
+    .post("/api/meals")
+    .send({
+      name: "Carne con papas",
+      foods: [
+        {
+          name: "Papa",
+          calories: "10",
+          quantity: 1,
+        },
+        {
+          name: "Lomo",
+          calories: "20",
+          quantity: 1,
+        },
+      ],
+      date: "2023-10-04T10:00:00.000Z",
+      hour: "20:15",
+      calories: 200,
+      userId: "987654321",
+    });
+
+    const response1 = await request(app)
+    .get("/api/meals/user/987654321/startDate/2022-10-18/endDate/2023-10-19")
+    expect(response1.statusCode).toEqual(200);
+});
+
 test("[GET MEALS]Esto deberia retornar un 500", async () => {
   findStub = sinon.stub(mealModel, "find").throws(new Error("Database error"));
 

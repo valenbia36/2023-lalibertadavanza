@@ -3,7 +3,8 @@ const models = {
     foodModel: require('./food'),
     mealModel: require('./meal'),
     categoryModel: require('./category'),
-    goalModel: require('./goal')
+    goalModel: require('./goal'),
+    waterGlassModel: require('./waterGlass')
 }
 
 module.exports = models;

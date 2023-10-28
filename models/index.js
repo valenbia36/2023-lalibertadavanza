@@ -4,7 +4,8 @@ const models = {
     mealModel: require('./meal'),
     categoryModel: require('./category'),
     goalModel: require('./goal'),
-    waterGlassModel: require('./waterGlass')
+    waterGlassModel: require('./waterGlass'),
+    intermittentFastingModel: require('./intermittentFasting')
 }
 
 module.exports = models;

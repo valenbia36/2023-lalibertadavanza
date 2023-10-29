@@ -92,7 +92,6 @@ const updateUserPassword = async (req, res) => {
         res.send({data});
         res.status(200)
     } catch(e){
-        console.log(e);
         handleHttpError(res, 'ERROR_UPDATE_USER_PASSWORD', 500);
     }
 }
@@ -106,7 +105,6 @@ const updateUser = async (req, res) => {
         res.status(200)
         return 200;
     } catch(e){
-        console.log(e);
         handleHttpError(res, 'ERROR_UPDATE_USER', 500);
         return 500;
     }

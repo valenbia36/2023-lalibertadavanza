@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for pyd-heliApp-back/models/meal.js</title>
+    <title>Code coverage report for pyd-heliApp-back/models/intermittentFasting.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,7 +19,7 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">pyd-heliApp-back/models</a> meal.js</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">pyd-heliApp-back/models</a> intermittentFasting.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
@@ -85,17 +85,7 @@
 <a name='L20'></a><a href='#L20'>20</a>
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
-<a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a>
-<a name='L25'></a><a href='#L25'>25</a>
-<a name='L26'></a><a href='#L26'>26</a>
-<a name='L27'></a><a href='#L27'>27</a>
-<a name='L28'></a><a href='#L28'>28</a>
-<a name='L29'></a><a href='#L29'>29</a>
-<a name='L30'></a><a href='#L30'>30</a>
-<a name='L31'></a><a href='#L31'>31</a>
-<a name='L32'></a><a href='#L32'>32</a>
-<a name='L33'></a><a href='#L33'>33</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">8x</span>
+<a name='L23'></a><a href='#L23'>23</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-yes">8x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">8x</span>
@@ -116,50 +106,30 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const mongoose = require("mongoose");
-const mongooseDelete = require("mongoose-delete");
+<span class="cline-any cline-yes">8x</span></td><td class="text"><pre class="prettyprint lang-js">const mongoose = require('mongoose');
+const mongooseDelete = require('mongoose-delete');
 &nbsp;
-const mealSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
+const intermittentFastingSchema = new mongoose.Schema(
+    {
+        userId:{
+            type: String
+        },
+        startDateTime:{
+            type: Date
+        },
+        endDateTime:{
+            type: Date
+        }
     },
-    foods: {
-      type: [],
-    },
-    date: {
-      type: String,
-    },
-    hour: {
-      type: String,
-    },
-    calories: {
-      type: Number,
-    },
-    userId: {
-      type: String,
-    },
-  },
-  {
-    timestamps: true,
-    versionKey: false,
-  }
-);
+    {
+        timestamps: true,
+        versionKey: false
+    }
+);    
 &nbsp;
-mealSchema.plugin(mongooseDelete, { overrideMethods: "all" });
-module.exports = mongoose.model("meals", mealSchema);
-&nbsp;</pre></td></tr></table></pre>
+intermittentFastingSchema.plugin(mongooseDelete, { overrideMethods: 'all' });
+module.exports = mongoose.model('intermittentFasting', intermittentFastingSchema);</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->

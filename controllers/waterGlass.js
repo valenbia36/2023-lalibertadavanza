@@ -40,7 +40,6 @@ const getWaterGlassForUserIdByDay = async (req, res) => {
     ]);
     res.send({ result });
   } catch (e) {
-    console.log(e);
     handleHttpError(res, "ERROR_GET_WATER_GLASS_FOR_USER_ID_COUNT_BY_DATE", 500);
   }
 };

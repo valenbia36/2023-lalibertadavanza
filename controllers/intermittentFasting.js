@@ -1,5 +1,7 @@
 const { intermittentFastingModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
+const schedule = require('node-schedule');
+const { sendIntermittentFastingNotificationEmail } = require("./notifications");
 
 const createIntermittentFasting = async (req, res) => {
   try {
@@ -18,6 +20,25 @@ const createIntermittentFasting = async (req, res) => {
     }
 
     const data = await intermittentFastingModel.create(req.body);
+    const startDateTime = new Date(req.body.startDateTime);  
+    schedule.scheduleJob(startDateTime.setTime(startDateTime.getTime() + (60 * 60000)), () =>{
+      
+      const reqUpdateUser = {
+        body: {
+          email: req.body.email,
+          userName: req.body.userName
+        },
+      };
+  
+      const resUpdateUser = {
+        send: (data) => {},
+        status: (statusCode) => {
+          console.log(`Status Code: ${statusCode}`);
+        },
+      };
+
+      sendIntermittentFastingNotificationEmail(reqUpdateUser, resUpdateUser)
+    })
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_CREATE_INTERMITTENT_FASTING", 500);

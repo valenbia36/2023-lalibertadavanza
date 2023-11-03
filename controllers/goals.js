@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { goalModel,mealModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
 
@@ -22,7 +23,7 @@ const getActiveGoalsByUserId = async (req, res) => {
   }
 };
 
-const calculateGoalStatus = (goal) => {
+const calculateGoalStatus = async (goal) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -32,13 +33,35 @@ const calculateGoalStatus = (goal) => {
   const goalEndDate = new Date(goal.endDate);
   goalEndDate.setHours(0, 0, 0, 0);
 
+
   if (today < goalStartDate) {
+    if( goal.recurrency === "monthly" )
+    {
+      await goalModel.deleteOne({ _id: goal._id });
+      goal.startDate.setMonth(goal.startDate.getMonth() + 1);
+      goal.endDate.setMonth(goal.endDate.getMonth() + 1);
+      await createNewRecurrencyGoal(goal)
+    }
+    if( goal.recurrency === "weekly" )
+    {
+      await goalModel.deleteOne({ _id: goal._id });
+      goal.startDate.setDate(goal.startDate.getDate() + 7);
+      goal.endDate.setDate(goal.endDate.getDate() + 7);
+      await createNewRecurrencyGoal(goal)
+    }
     return "Not started";
   } else if (today >= goalStartDate && today <= goalEndDate) {
     return "In progress";
   } else {
+    
     return "Expired";
   }
+};
+
+
+const createNewRecurrencyGoal = async (goal) => {
+  const newGoal = {"name" : goal.name, "calories": goal.calories, "userId": goal.userId, "startDate":goal.startDate, "endDate":goal.endDate, "recurrency":goal.recurrency}
+  await goalModel.create(newGoal);
 };
 
 const getGoalsByUserWithProgress = async(req,res) => {
@@ -59,7 +82,7 @@ const getGoalsByUserWithProgress = async(req,res) => {
         totalCalorias += record.calories;
       });
 
-      const state = calculateGoalStatus(item)
+      const state = await calculateGoalStatus(item)
     
       const newItem = {
         ...item.toObject(),
@@ -84,6 +107,7 @@ const createGoal = async (req, res) => {
   }
 };
 
+
 const updateGoal = async (req, res) => {
   try {
     const data = await goalModel.findOneAndUpdate(
@@ -98,6 +122,7 @@ const updateGoal = async (req, res) => {
 
 const deleteGoal = async (req, res) => {
   try {
+    console.log(req.params.goalId )
     const data = await goalModel.delete({ _id: req.params.goalId });
     res.send({ data });
   } catch (e) {

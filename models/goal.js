@@ -17,6 +17,9 @@ const goalSchema = new mongoose.Schema(
         },
         endDate:{
             type: Date
+        },
+        recurrency:{
+            type: String
         }
     },
     {

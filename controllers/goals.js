@@ -122,7 +122,6 @@ const updateGoal = async (req, res) => {
 
 const deleteGoal = async (req, res) => {
   try {
-    console.log(req.params.goalId )
     const data = await goalModel.delete({ _id: req.params.goalId });
     res.send({ data });
   } catch (e) {

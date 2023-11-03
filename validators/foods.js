@@ -15,6 +15,15 @@ const validatorCreateFood = [
     .exists()
     .notEmpty(),
     (req, res, next) => {
+        if (req.body.carbs === "") {
+            req.body.carbs = 0;
+        }
+        if (req.body.proteins === "") {
+            req.body.proteins = 0;
+          }
+        if (req.body.fats === "") {
+            req.body.fats = 0;
+        }
         return validateResults(req, res, next);
     }
 ];

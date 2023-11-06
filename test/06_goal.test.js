@@ -7,13 +7,26 @@ beforeAll(async () => {
   await goalModel.deleteMany({});
 });
 
-test("Se creo el goal correctamente", async () => {
+test("Se creo el goal semanal correctamente", async () => {
   const response = await request(app).post("/api/goals").send({
     name: "Meta 1",
-    startDate: "2023-10-22T03:00:15.454Z",
-    endDate: "2023-10-24T03:00:15.454Z",
+    startDate: "2024-10-22T03:00:15.454Z",
+    endDate: "2024-10-24T03:00:15.454Z",
     calories: 200,
     userId: "987654321",
+    recurrency: "monthly"
+  });
+  expect(response.statusCode).toEqual(200);
+});
+
+test("Se creo el goal mensual correctamente", async () => {
+  const response = await request(app).post("/api/goals").send({
+    name: "Meta 1",
+    startDate: "2025-10-22T03:00:15.454Z",
+    endDate: "2025-10-24T03:00:15.454Z",
+    calories: 200,
+    userId: "987654321",
+    recurrency: "weekly"
   });
   expect(response.statusCode).toEqual(200);
 });

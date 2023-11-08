@@ -35,25 +35,24 @@ const calculateGoalStatus = async (goal) => {
 
 
   if (today < goalStartDate) {
-    if( goal.recurrency === "monthly" )
+    return "Not started";
+  } else if (today >= goalStartDate && today <= goalEndDate) {
+    return "In progress";
+  } else {
+    if( goal.recurrency === "Monthly" )
     {
       await goalModel.deleteOne({ _id: goal._id });
       goal.startDate.setMonth(goal.startDate.getMonth() + 1);
       goal.endDate.setMonth(goal.endDate.getMonth() + 1);
       await createNewRecurrencyGoal(goal)
     }
-    if( goal.recurrency === "weekly" )
+    if( goal.recurrency === "Weekly" )
     {
       await goalModel.deleteOne({ _id: goal._id });
       goal.startDate.setDate(goal.startDate.getDate() + 7);
       goal.endDate.setDate(goal.endDate.getDate() + 7);
       await createNewRecurrencyGoal(goal)
     }
-    return "Not started";
-  } else if (today >= goalStartDate && today <= goalEndDate) {
-    return "In progress";
-  } else {
-    
     return "Expired";
   }
 };

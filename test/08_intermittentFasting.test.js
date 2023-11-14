@@ -16,6 +16,17 @@ test("Se creo el intermittent fasting correctamente", async () => {
   expect(response.statusCode).toEqual(200);
 });
 
+test("[ERROR 501] Ya existe un ayuno intermitente en ese horario", async () => {
+  const response = await request(app).post("/api/intermittentFasting").send({
+    startDateTime: "2023-10-22T03:00:15.454Z",
+    endDateTime: "2023-10-23T05:00:15.454Z",
+    userId: "987654321",
+    email: "adminuser@admin.com",
+    userName: "Admin Admin"
+  });
+  expect(response.statusCode).toEqual(501);
+});
+
 test("Se obtuvieron los intermittent fastings activos correctamente", async () => {
   const response = await request(app).get(
     "/api/intermittentFasting/active/987654321"

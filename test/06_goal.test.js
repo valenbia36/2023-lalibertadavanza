@@ -57,13 +57,14 @@ test("[GET ACTIVE GOALS BY USER ID] Esto deberia retornar un 200", async () => {
   expect(response1.statusCode).toEqual(200);
 });
 
-test("[GET GOALS BY USER ID WITH PROGRESS] Esto deberia retornar un 200", async () => {
+test("[GET GOALS BY USER ID WITH PROGRESS MONTHLY] Esto deberia retornar un 200", async () => {
   const response = await request(app).post("/api/goals").send({
     name: "Meta 1",
     startDate: "2023-10-22T03:00:15.454Z",
     endDate: "2023-10-24T03:00:15.454Z",
     calories: 200,
     userId: "987654321",
+    recurrency: "Monthly"
   });
 
   const response1 = await request(app).get(
@@ -71,6 +72,39 @@ test("[GET GOALS BY USER ID WITH PROGRESS] Esto deberia retornar un 200", async 
   );
   expect(response1.statusCode).toEqual(200);
 });
+
+test("[GET GOALS BY USER ID WITH PROGRESS WEEKLY] Esto deberia retornar un 200", async () => {
+  const response = await request(app).post("/api/goals").send({
+    name: "Meta 1",
+    startDate: "2023-10-22T03:00:15.454Z",
+    endDate: "2023-10-24T03:00:15.454Z",
+    calories: 200,
+    userId: "987654321",
+    recurrency: "Weekly"
+  });
+
+  const response1 = await request(app).get(
+    "/api/goals/goalsWithProgress/987654321"
+  );
+  expect(response1.statusCode).toEqual(200);
+});
+
+test("[GET GOALS BY USER ID WITH PROGRESS] Esto deberia retornar un 200", async () => {
+  const response = await request(app).post("/api/goals").send({
+    name: "Meta 1",
+    startDate: "2023-10-22T03:00:15.454Z",
+    endDate: "2024-10-24T03:00:15.454Z",
+    calories: 200,
+    userId: "987654321",
+    recurrency: "Weekly"
+  });
+
+  const response1 = await request(app).get(
+    "/api/goals/goalsWithProgress/987654321"
+  );
+  expect(response1.statusCode).toEqual(200);
+});
+
 
 test("[DELETE GOAL BY ID] Esto deberia retornar un 200", async () => {
   const response = await request(app).post("/api/goals").send({

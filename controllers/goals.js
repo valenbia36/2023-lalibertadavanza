@@ -33,7 +33,6 @@ const calculateGoalStatus = async (goal) => {
   const goalEndDate = new Date(goal.endDate);
   goalEndDate.setHours(0, 0, 0, 0);
 
-
   if (today < goalStartDate) {
     return "Not started";
   } else if (today >= goalStartDate && today <= goalEndDate) {
@@ -56,7 +55,6 @@ const calculateGoalStatus = async (goal) => {
     return "Expired";
   }
 };
-
 
 const createNewRecurrencyGoal = async (goal) => {
   const newGoal = {"name" : goal.name, "calories": goal.calories, "userId": goal.userId, "startDate":goal.startDate, "endDate":goal.endDate, "recurrency":goal.recurrency}

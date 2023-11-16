@@ -121,7 +121,6 @@ const getCaloriesByDays = async (req, res) => {
 
     res.send({ fechasIntermedias });
   } catch (e) {
-    console.log(e);
     handleHttpError(res, "ERROR_GET_CALORIES", 500);
   }
 };
@@ -145,7 +144,6 @@ const getCaloriesBetweenDays = async (req, res) => {
 
     res.send({ totalCalorias });
   } catch (e) {
-    console.log(e);
     handleHttpError(res, "ERROR_GET_CALORIES", 500);
   }
 };

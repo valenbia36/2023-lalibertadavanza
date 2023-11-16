@@ -31,7 +31,10 @@ test("Se creo el alimento correctamente", async() => {
             "name": "Rucula",
             "calories": "2",
             "weight": "10",
-            "category": "Carne"
+            "category": "Carne",
+            "carbs": "",
+            "proteins": "",
+            "fats": ""
         }
     )
     expect(response.statusCode).toEqual(200);

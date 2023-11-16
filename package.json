@@ -10,6 +10,7 @@
     "mongoose": "^7.5.0",
     "mongoose-delete": "^1.0.1",
     "mongose": "^0.0.2-security",
+    "node-schedule": "^2.1.1",
     "nodemailer": "^6.9.6",
     "sinon": "^16.0.0"
   },

@@ -2,6 +2,7 @@ const request = require('supertest');
 const sinon = require('sinon');
 const app = require('../app');
 const { usersModel } = require("../models");
+const { sendIntermittentFastingNotificationEmail } = require('../controllers/notifications');
 
 test("[SEND NOTIFICATION OK] Should send a reset password email successfully", async () => {
   const response = await request(app)
@@ -15,6 +16,38 @@ test("[SEND NOTIFICATION OK] Should send a reset password email successfully", a
 
   expect(response.statusCode).toEqual(200);
 });
+
+test("[SEND NOTIFICATION OK] Should send a reset password email successfully", async () => {
+  const response = await request(app)
+    .post("/api/notifications/sendEmail")
+    .send({
+      email: "user@example.com",
+      token: "sampleToken",
+      userName: "John Doe",
+      url: "url"
+    });
+
+  expect(response.statusCode).toEqual(200);
+});
+
+test("Hola", async() => {
+  const reqUpdateUser = {
+    body: {
+      email: 'agmassieri00@gmail.com',
+      userName: 'userName'
+    },
+  };
+
+  const resUpdateUser = {
+    send: (data) => {},
+    status: (statusCode) => {
+      console.log(`Status Code: ${statusCode}`);
+    },
+  };
+
+  sendIntermittentFastingNotificationEmail(reqUpdateUser, resUpdateUser)
+  //....Agregar assert
+})
 
 test("[VALIDATE TOKEN OK] Should send a reset password email successfully", async () => {
   const response = await request(app).post("/api/auth/register").send({

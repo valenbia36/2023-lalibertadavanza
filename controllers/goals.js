@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { goalModel,mealModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
 
@@ -22,7 +23,7 @@ const getActiveGoalsByUserId = async (req, res) => {
   }
 };
 
-const calculateGoalStatus = (goal) => {
+const calculateGoalStatus = async (goal) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -37,8 +38,27 @@ const calculateGoalStatus = (goal) => {
   } else if (today >= goalStartDate && today <= goalEndDate) {
     return "In progress";
   } else {
+    if( goal.recurrency === "Monthly" )
+    {
+      await goalModel.deleteOne({ _id: goal._id });
+      goal.startDate.setMonth(goal.startDate.getMonth() + 1);
+      goal.endDate.setMonth(goal.endDate.getMonth() + 1);
+      await createNewRecurrencyGoal(goal)
+    }
+    if( goal.recurrency === "Weekly" )
+    {
+      await goalModel.deleteOne({ _id: goal._id });
+      goal.startDate.setDate(goal.startDate.getDate() + 7);
+      goal.endDate.setDate(goal.endDate.getDate() + 7);
+      await createNewRecurrencyGoal(goal)
+    }
     return "Expired";
   }
+};
+
+const createNewRecurrencyGoal = async (goal) => {
+  const newGoal = {"name" : goal.name, "calories": goal.calories, "userId": goal.userId, "startDate":goal.startDate, "endDate":goal.endDate, "recurrency":goal.recurrency}
+  await goalModel.create(newGoal);
 };
 
 const getGoalsByUserWithProgress = async(req,res) => {
@@ -59,7 +79,7 @@ const getGoalsByUserWithProgress = async(req,res) => {
         totalCalorias += record.calories;
       });
 
-      const state = calculateGoalStatus(item)
+      const state = await calculateGoalStatus(item)
     
       const newItem = {
         ...item.toObject(),
@@ -83,6 +103,7 @@ const createGoal = async (req, res) => {
     handleHttpError(res, "ERROR_CREATE_GOAL", 500);
   }
 };
+
 
 const updateGoal = async (req, res) => {
   try {

@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema(
             type: Number,
         },
         role:{
-            type: ["user", "admin"],
+            type: ["user", "admin", "nutritionist"],
             default: "user"
         },
         secretToken:{

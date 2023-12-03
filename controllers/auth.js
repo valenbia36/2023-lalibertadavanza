@@ -61,6 +61,15 @@ const getUsers = async (req, res) => {
     }
 }
 
+const getNutritionistUsers = async (req, res) => {
+    try{
+        const data = await usersModel.find({role: 'nutritionist'});
+        res.send({data});        
+    } catch(e){
+        handleHttpError(res, 'ERROR_GET_NUTRITIONIST_USERS', 500);
+    }
+}
+
 const getUser = async (req, res) => {
     try{
         const data = await usersModel.findById(req.params.id);
@@ -119,4 +128,36 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { registerController, loginController, getUsers, getUser, getUserByEmail, deleteUser, updateUserPassword, updateUser };
+const updateNutritionist = async (req, res) => {
+    try{
+        const data = await usersModel.findByIdAndUpdate(
+            req.params.id, {"nutritionist": req.body.nutritionistId}
+        );
+        res.send({data});
+        res.status(200)
+    } catch(e){
+        handleHttpError(res, 'ERROR_UPDATE_NUTRITIONIST', 500);
+    }
+}
+
+const getNutritionistByUserId = async (req, res) => {
+    try{
+        const data = await usersModel.findById(req.params.id).populate('nutritionist');
+        res.send({data});    
+    } catch(e){
+        console.log(e);
+        handleHttpError(res, 'ERROR_GET_NUTRITIONIST_BY_USER_ID', 500);
+    }
+}
+
+const getPatientsByNutritionistId = async (req, res) => {
+    try {
+        const data = await usersModel.find({ nutritionist: req.params.id });
+        res.json({data});
+      } catch (e) {
+        console.log(e);
+        handleHttpError(res, 'ERROR_GET_PATIENTS_BY_NUTRITIONIST_ID', 500);
+      }
+}
+
+module.exports = { registerController, loginController, getUsers, getNutritionistUsers, getUser, getUserByEmail, deleteUser, updateUserPassword, updateUser, updateNutritionist, getNutritionistByUserId, getPatientsByNutritionistId };

@@ -11,6 +11,7 @@ const createRelationShipRequest = async (req, res) => {
         email: req.body.nutritionistEmail,
         userNameUser: req.body.userName,
         userNameNutritionist: req.body.nutritionistUserName,
+        url: req.body.url,
       },
     };
 

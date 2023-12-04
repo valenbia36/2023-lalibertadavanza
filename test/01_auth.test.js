@@ -34,7 +34,8 @@ test("Se creo el usuario correctamente", async() => {
             "sex": "male",
             "age": "23",
             "height": "1.80",
-            "weight": "70"
+            "weight": "70",
+            "role": "user"
         }
     )
     expect(response.statusCode).toEqual(200);
@@ -88,7 +89,8 @@ test("Se creo y actualizo el usuario correctamente", async() => {
             "sex": "male",
             "age": "23",
             "height": "1.80",
-            "weight": "70"
+            "weight": "70",
+            "role": "user"
         }
     )
     expect(response.statusCode).toEqual(200);
@@ -117,7 +119,8 @@ test("Se creo y obtuvo el usuario correctamente", async() => {
             "sex": "male",
             "age": "23",
             "height": "1.80",
-            "weight": "70"
+            "weight": "70",
+            "role": "user"
         }
     )
     expect(response.statusCode).toEqual(200);
@@ -140,7 +143,8 @@ test("Se creo y obtuvo el usuario por email correctamente", async() => {
             "sex": "male",
             "age": "23",
             "height": "1.80",
-            "weight": "70"
+            "weight": "70",
+            "role": "user"
         }
     )
     expect(response.statusCode).toEqual(200);
@@ -162,7 +166,8 @@ test("Se creo y obtuvo el usuario por email correctamente", async() => {
             "sex": "male",
             "age": "23",
             "height": "1.80",
-            "weight": "70"
+            "weight": "70",
+            "role": "user"
         }
     )
     expect(response.statusCode).toEqual(200);
@@ -190,7 +195,8 @@ test("Se creo y actualizo el usuario correctamente", async() => {
             "sex": "male",
             "age": "23",
             "height": "1.80",
-            "weight": "70"
+            "weight": "70",
+            "role": "user"
         }
     )
     expect(response.statusCode).toEqual(200);
@@ -228,7 +234,8 @@ test('[REGISTER]Esto debe retornar un error 500', async () => {
         "sex": "male",
         "age": "23",
         "height": "1.80",
-        "weight": "70"
+        "weight": "70",
+        "role": "user"
     };
 
     sinon.stub(usersModel, 'create').throws(new Error('Database error'));

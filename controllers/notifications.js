@@ -89,6 +89,7 @@ const sendRelationshipRequestEmail = async (req) => {
   const email = req.body.email;
   const userNameUser = req.body.userNameUser;
   const userNameNutritionist = req.body.userNameNutritionist;
+  const url = req.body.url;
 
   try {
     const send_to = email;

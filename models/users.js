@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const mongooseDelete = require('mongoose-delete');
+const { Schema } = mongoose;
 
 const userSchema = new mongoose.Schema(
     {
@@ -29,9 +30,13 @@ const userSchema = new mongoose.Schema(
         weight:{
             type: Number,
         },
-        role:{
-            type: ["user", "admin"],
-            default: "user"
+        role: {
+            type: String,
+            enum: ["user", "admin", "nutritionist"]
+        },
+        nutritionist: {
+            type: Schema.Types.ObjectId,
+            ref: 'users'
         },
         secretToken:{
             type: String

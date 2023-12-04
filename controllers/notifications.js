@@ -85,6 +85,33 @@ const sendIntermittentFastingNotificationEmail = async (req, res) => {
   }
 };
 
+const sendRelationshipRequestEmail = async (req) => {
+  const email = req.body.email;
+  const userNameUser = req.body.userNameUser;
+  const userNameNutritionist = req.body.userNameNutritionist;
+  const url = req.body.url;
+
+  try {
+    const send_to = email;
+    const sent_from = process.env.EMAIL_USER;
+    const reply_to = email;
+    const subject = userNameUser + " solicito que seas su nutricionista!";
+
+    const message = `
+            <p>¡Hola ${userNameNutritionist}!</p>
+            <p>Recibes este correo porque ${userNameUser} te ha solicitado que seas su nutricionista.</p>
+            <p>Podras aceptar/rechazar la solitud desde la App o ingresando a traves del siguiente link:</p>
+            <a href="${url}">${url}</a>
+            <p>Saludos!/p>
+            <p>Equipo Heliapp/p>
+            `;
+
+    await sendEmail(subject, message, send_to, sent_from, reply_to);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const validateToken = async (req, res) => {
   try {
     const data = await usersModel.findOne({ secretToken: req.params.token });
@@ -94,4 +121,9 @@ const validateToken = async (req, res) => {
   }
 };
 
-module.exports = { sendResetPasswordEmail, sendIntermittentFastingNotificationEmail, validateToken };
+module.exports = {
+  sendResetPasswordEmail,
+  sendIntermittentFastingNotificationEmail,
+  sendRelationshipRequestEmail,
+  validateToken,
+};

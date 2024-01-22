@@ -17,6 +17,7 @@ const mealSchema = new mongoose.Schema(
     },
     calories: {
       type: Number,
+      min: [0, "Calories cant be negative"]
     },
     carbs: {
       type: String,

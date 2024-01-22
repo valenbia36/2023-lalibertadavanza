@@ -8,23 +8,28 @@ const foodSchema = new mongoose.Schema(
       required: true,
     },
     calories: {
-      type: String,
+      type: Number,
+      min: [0],
       required: true,
     },
     carbs: {
-      type: String,
+      type: Number,
+      min: [0],
       default: 0,
     },
     proteins: {
-      type: String,
+      type: Number,
+      min: [0],
       default: 0,
     },
     fats: {
-      type: String,
+      type: Number,
+      min: [0],
       default: 0,
     },
     weight: {
-      type: String,
+      type: Number,
+      min: [0],
       required: true,
     },
     category: {

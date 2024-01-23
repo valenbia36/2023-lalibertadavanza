@@ -11,11 +11,9 @@ const recipeSchema = new mongoose.Schema(
     ingredients: {
       type: [],
     },
-    steps: [
-      {
-        description: { type: String },
-      },
-    ],
+    steps: {
+      type: [],
+    },
     images: [
       {
         data: Buffer, // Datos binarios de la imagen
@@ -23,7 +21,7 @@ const recipeSchema = new mongoose.Schema(
       },
     ],
     ranking: {
-      type: Number,
+      type: [Number],
       default: 0,
     },
     creator: {

@@ -2,6 +2,28 @@ const mongoose = require("mongoose");
 const mongooseDelete = require("mongoose-delete");
 const { Schema } = mongoose;
 
+const stepSchema = new mongoose.Schema({
+  text: {
+    type: String,
+    required: true,
+  },
+  images: [
+    {
+      type: String,
+    },
+  ],
+});
+const ratingSchema = new mongoose.Schema({
+  rate: {
+    type: Number,
+    required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    required: true,
+  },
+});
 const recipeSchema = new mongoose.Schema(
   {
     name: {
@@ -11,19 +33,8 @@ const recipeSchema = new mongoose.Schema(
     ingredients: {
       type: [],
     },
-    steps: {
-      type: [],
-    },
-    images: [
-      {
-        data: Buffer, // Datos binarios de la imagen
-        contentType: String, // Tipo de contenido de la imagen (ej. 'image/jpeg')
-      },
-    ],
-    ranking: {
-      type: [Number],
-      default: 0,
-    },
+    steps: [stepSchema],
+    ratings: [ratingSchema],
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "users",

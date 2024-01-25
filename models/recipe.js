@@ -5,11 +5,19 @@ const { Schema } = mongoose;
 const stepSchema = new mongoose.Schema({
   text: {
     type: String,
-    required: true,
   },
   images: [
     {
       type: String,
+      validate: {
+        validator: function (value) {
+          // Validar si la cadena es una imagen en base64
+          const base64Regex = /^data:image\/([a-zA-Z]*);base64,([^\"]*)$/;
+          return base64Regex.test(value);
+        },
+        message: (props) =>
+          `${props.value} no es una imagen en formato base64 válida!`,
+      },
     },
   ],
 });

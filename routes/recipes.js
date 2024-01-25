@@ -10,6 +10,6 @@ const {
 router.get("/", getRecipes);
 router.get("/recipes/:id", getRecipe);
 router.post("/", createRecipe);
-router.post("/rate/:id", addRateToRecipe);
+router.put("/rate/:id", addRateToRecipe);
 
 module.exports = router;

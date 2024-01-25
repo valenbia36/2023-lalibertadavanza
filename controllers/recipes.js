@@ -45,22 +45,24 @@ const getRecipe = async (req, res) => {
 
 const addRateToRecipe = async (req, res) => {
   try {
+    console.log(req.body);
     const data = await recipeModel.findById(req.body.id);
     if (!data) {
       console.log("ERROR_RECIPE_NOT_FOUND");
       return handleHttpError(res, "ERROR_RECIPE_NOT_FOUND", 404);
     }
+    console.log(data);
 
     // Verificar si el usuario ya calificó esta receta
-    /* if (data.rating.some((rate) => rate.userId === req.body.userId)) {
+    if (data.ratings.some((rate) => rate.userId === req.body.userId)) {
       return handleHttpError(res, "ERROR_ALREADY_RATED", 400);
-    } */
-
-    if (!Array.isArray(data.rating)) {
-      data.rating = [];
     }
+
+    /* if (!Array.isArray(data.ratings)) {
+      data.ratings = [];
+    } */
     // Agregar la calificación junto con el ID del usuario
-    data.rating.push({ rate: req.body.rate, userId: req.body.userId });
+    data.ratings.push({ rate: req.body.rate, userId: req.body.userId });
 
     await data.save();
 

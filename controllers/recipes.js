@@ -11,7 +11,7 @@ const createRecipe = async (req, res) => {
 
     const data = await recipeModel.create({
       name: name,
-      ingredients: ingredients,
+      foods: ingredients,
       steps: steps,
       creator: creatorId,
     });
@@ -71,10 +71,22 @@ const addRateToRecipe = async (req, res) => {
     handleHttpError(res, "ERROR_ADD_RATE", 500);
   }
 };
+const updateRecipeById = async (req, res) => {
+  try {
+    const data = await recipeModel.findOneAndUpdate(
+      { _id: req.params.id },
+      req.body
+    );
+    res.send({ data });
+  } catch (e) {
+    handleHttpError(res, "ERROR_UPDATE_MEAL", 500);
+  }
+};
 
 module.exports = {
   getRecipe,
   getRecipes,
   createRecipe,
   addRateToRecipe,
+  updateRecipeById,
 };

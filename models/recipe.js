@@ -38,7 +38,7 @@ const recipeSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    ingredients: {
+    foods: {
       type: [],
     },
     steps: [stepSchema],

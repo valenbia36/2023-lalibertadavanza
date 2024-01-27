@@ -8,6 +8,7 @@ const models = {
   waterGlassModel: require("./waterGlass"),
   intermittentFastingModel: require("./intermittentFasting"),
   recipeModel: require("./recipe"),
+  weekModel: require("./week"),
 };
 
 module.exports = models;

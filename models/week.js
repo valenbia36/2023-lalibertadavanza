@@ -1,50 +1,27 @@
-const mongoose = require("mongoose");
 const mongooseDelete = require("mongoose-delete");
+const mongoose = require("mongoose");
 
+const mealSchema = new mongoose.Schema({
+  breakfast: {
+    type: mongoose.Schema.Types.Mixed,
+    ref: "recipe",
+  },
+  lunch: { type: mongoose.Schema.Types.Mixed, ref: "recipe" },
+  snack: { type: mongoose.Schema.Types.Mixed, ref: "recipe" },
+  dinner: { type: mongoose.Schema.Types.Mixed, ref: "recipe" },
+});
 const weekSchema = new mongoose.Schema({
-  startDate: { type: Date, required: true },
-  createdDate: { type: Date, default: Date.now },
-  Monday: {
-    breakfast: { type: String, default: null },
-    lunch: { type: String, default: null },
-    snack: { type: String, default: null },
-    dinner: { type: String, default: null },
-  },
-  Tuesday: {
-    breakfast: { type: String, default: null },
-    lunch: { type: String, default: null },
-    snack: { type: String, default: null },
-    dinner: { type: String, default: null },
-  },
-  Wednesday: {
-    breakfast: { type: String, default: null },
-    lunch: { type: String, default: null },
-    snack: { type: String, default: null },
-    dinner: { type: String, default: null },
-  },
-  Thursday: {
-    breakfast: { type: String, default: null },
-    lunch: { type: String, default: null },
-    snack: { type: String, default: null },
-    dinner: { type: String, default: null },
-  },
-  Friday: {
-    breakfast: { type: String, default: null },
-    lunch: { type: String, default: null },
-    snack: { type: String, default: null },
-    dinner: { type: String, default: null },
-  },
-  Saturday: {
-    breakfast: { type: String, default: null },
-    lunch: { type: String, default: null },
-    snack: { type: String, default: null },
-    dinner: { type: String, default: null },
-  },
-  Sunday: {
-    breakfast: { type: String, default: null },
-    lunch: { type: String, default: null },
-    snack: { type: String, default: null },
-    dinner: { type: String, default: null },
+  Monday: mealSchema,
+  Tuesday: mealSchema,
+  Wednesday: mealSchema,
+  Thursday: mealSchema,
+  Friday: mealSchema,
+  Saturday: mealSchema,
+  Sunday: mealSchema,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    required: true,
   },
 });
 

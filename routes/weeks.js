@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { getWeek, getCurrentWeek, saveWeek } = require("../controllers/weeks");
+const { getWeek, saveWeek } = require("../controllers/weeks");
 
-router.get("/currentWeek", getCurrentWeek);
+router.get("/:id", getWeek);
 router.put("/", saveWeek);
 
 module.exports = router;

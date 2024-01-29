@@ -1,8 +1,10 @@
-const request = require('supertest');
-const sinon = require('sinon');
-const app = require('../app');
+const request = require("supertest");
+const sinon = require("sinon");
+const app = require("../app");
 const { usersModel } = require("../models");
-const { sendIntermittentFastingNotificationEmail } = require('../controllers/notifications');
+const {
+  sendIntermittentFastingNotificationEmail,
+} = require("../controllers/notifications");
 
 test("[SEND NOTIFICATION OK] Should send a reset password email successfully", async () => {
   const response = await request(app)
@@ -11,7 +13,7 @@ test("[SEND NOTIFICATION OK] Should send a reset password email successfully", a
       email: "user@example.com",
       token: "sampleToken",
       userName: "John Doe",
-      url: "url"
+      url: "url",
     });
 
   expect(response.statusCode).toEqual(200);
@@ -24,30 +26,28 @@ test("[SEND NOTIFICATION OK] Should send a reset password email successfully", a
       email: "user@example.com",
       token: "sampleToken",
       userName: "John Doe",
-      url: "url"
+      url: "url",
     });
 
   expect(response.statusCode).toEqual(200);
 });
 
-test("Hola", async() => {
+test("Hola", async () => {
   const reqUpdateUser = {
     body: {
-      email: 'agmassieri00@gmail.com',
-      userName: 'userName'
+      email: "agmassieri00@gmail.com",
+      userName: "userName",
     },
   };
 
   const resUpdateUser = {
     send: (data) => {},
-    status: (statusCode) => {
-      console.log(`Status Code: ${statusCode}`);
-    },
+    status: (statusCode) => {},
   };
 
-  sendIntermittentFastingNotificationEmail(reqUpdateUser, resUpdateUser)
+  sendIntermittentFastingNotificationEmail(reqUpdateUser, resUpdateUser);
   //....Agregar assert
-})
+});
 
 test("[VALIDATE TOKEN OK] Should send a reset password email successfully", async () => {
   const response = await request(app).post("/api/auth/register").send({
@@ -70,12 +70,11 @@ test("[VALIDATE TOKEN OK] Should send a reset password email successfully", asyn
 });
 
 test("[VALIDATE TOKEN NO OK] Should send a reset password email successfully", async () => {
+  sinon.stub(usersModel, "findOne").throws(new Error("Database error"));
 
-    sinon.stub(usersModel, "findOne").throws(new Error("Database error"));
-  
-    const response1 = await request(app).get(
-      "/api/notifications/validateToken/1234"
-    );
-  
-    expect(response1.statusCode).toEqual(500);
-  }, 1000);
+  const response1 = await request(app).get(
+    "/api/notifications/validateToken/1234"
+  );
+
+  expect(response1.statusCode).toEqual(500);
+}, 1000);

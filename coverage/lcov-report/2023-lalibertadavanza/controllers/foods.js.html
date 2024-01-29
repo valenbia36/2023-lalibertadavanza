@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>15/20</span>
+                <span class='fraction'>20/20</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">75% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>15/20</span>
+                <span class='fraction'>20/20</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -96,11 +96,12 @@
 <a name='L31'></a><a href='#L31'>31</a>
 <a name='L32'></a><a href='#L32'>32</a>
 <a name='L33'></a><a href='#L33'>33</a>
-<a name='L34'></a><a href='#L34'>34</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -110,17 +111,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -129,47 +132,50 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span></td><td class="text"><pre class="prettyprint lang-js">const { foodModel } = require('../models');
-const { handleHttpError } = require('../utils/handleErrors');
-&nbsp;
+<span class="cline-any cline-yes">9x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { foodModel } = require("../models");
+const { handleHttpError } = require("../utils/handleErrors");
 &nbsp;
 const getFoods = async (req, res) =&gt; {
-    try{
-        const user = req.user;
-        const data = await foodModel.find({});
-        res.send({ data, user });        
-    } catch(e){
-        handleHttpError(res, 'ERROR_GET_FOODS', 500);
-    }
-}
+  try {
+    const user = req.user;
+    const data = await foodModel.find({});
+    res.send({ data, user });
+  } catch (e) {
+    handleHttpError(res, "ERROR_GET_FOODS", 500);
+  }
+};
 &nbsp;
-const getFoodsByCategory = <span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
-<span class="cstat-no" title="statement not covered" >    try{</span>
-        const user = <span class="cstat-no" title="statement not covered" >req.user;</span>
-        const data = <span class="cstat-no" title="statement not covered" >await categoryModel.find({name: req.params.category});</span>
-<span class="cstat-no" title="statement not covered" >        res.send({ data, user });        </span>
-    } catch(e){
-<span class="cstat-no" title="statement not covered" >        handleHttpError(res, 'ERROR_GET_CATEGORIES', 500);</span>
-    }
-}
+const getFoodsByCategory = async (req, res) =&gt; {
+  try {
+    const user = req.user;
+    const data = await foodModel.find({
+      category: req.params.categoryName,
+    });
+    res.send({ data, user });
+  } catch (e) {
+    handleHttpError(res, "ERROR_GET_CATEGORIES", 500);
+  }
+};
 &nbsp;
 const createFood = async (req, res) =&gt; {
-    try{
-        const data = await foodModel.create(req.body);
-        res.send({data});
-    } catch(e){
-        handleHttpError(res, 'ERROR_CREATE_FOOD', 500);
-    }
-}
+  try {
+    const data = await foodModel.create(req.body);
+    res.send({ data });
+  } catch (e) {
+    handleHttpError(res, "ERROR_CREATE_FOOD", 500);
+  }
+};
 &nbsp;
-module.exports = { getFoods, createFood, getFoodsByCategory};</pre></td></tr></table></pre>
+module.exports = { getFoods, createFood, getFoodsByCategory };
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-10-02T19:33:28.811Z
+                at 2024-01-29T20:57:23.374Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

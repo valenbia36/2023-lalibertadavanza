@@ -5,6 +5,7 @@ const { Schema } = mongoose;
 const stepSchema = new mongoose.Schema({
   text: {
     type: String,
+    required: true,
   },
   images: [
     {
@@ -41,7 +42,15 @@ const recipeSchema = new mongoose.Schema(
     foods: {
       type: [],
     },
-    steps: [stepSchema],
+    steps: {
+      type: [stepSchema],
+      validate: {
+        validator: function (v) {
+          return v && v.length > 0;
+        },
+        message: 'Debe haber al menos un elemento en el array "steps".',
+      },
+    },
     ratings: [ratingSchema],
     creator: {
       type: mongoose.Schema.Types.ObjectId,

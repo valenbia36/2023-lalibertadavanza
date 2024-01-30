@@ -73,6 +73,7 @@ const deleteMealById = async (req, res) => {
 
 const getCaloriesByDays = async (req, res) => {
   try {
+    console.log(req.params.startDate);
     const userId = req.params.id;
     const startDate = new Date(req.params.startDate).toISOString();
     const endDate = new Date(req.params.endDate).toISOString();

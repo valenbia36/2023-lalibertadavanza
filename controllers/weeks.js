@@ -3,7 +3,7 @@ const { weekModel } = require("../models");
 
 const getWeek = async (req, res) => {
   try {
-    const userId = req.params.id; // Supongo que el userId está en los parámetros de la solicitud
+    const userId = req.params.id;
     const weeks = await weekModel.find({ userId: userId });
     res.status(200).json(weeks);
   } catch (error) {
@@ -16,17 +16,15 @@ const saveWeek = async (req, res) => {
     const updatedPlan = req.body;
     console.log(req.body);
 
-    // Supongamos que tienes un identificador único para el plan (por ejemplo, userId)
-    const userId = req.body.userId; // Asegúrate de obtener el ID del usuario de tu sistema de autenticación
+    const userId = req.body.userId;
 
-    // Busca el plan existente en función del userId y actualiza los campos
     const result = await weekModel.findOneAndUpdate(
       { userId: userId },
       updatedPlan,
       {
         new: true,
-        upsert: true, // Si no existe, crea un nuevo documento
-        setDefaultsOnInsert: true, // Aplica valores predeterminados si se crea un nuevo documento
+        upsert: true,
+        setDefaultsOnInsert: true,
       }
     );
 

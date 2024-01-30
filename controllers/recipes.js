@@ -18,7 +18,6 @@ const createRecipe = async (req, res) => {
 
     res.send({ data });
   } catch (e) {
-    console.error("Error in createRecipe:", e);
     handleHttpError(res, "ERROR_CREATE_RECIPE", 500);
   }
 };
@@ -39,21 +38,19 @@ const getRecipe = async (req, res) => {
 
     res.status(200).json({ recipes });
   } catch (e) {
-    handleHttpError(res, "ERROR_GET_RECIPES", 500);
+    handleHttpError(res, "ERROR_GET_RECIPE", 500);
   }
 };
 
 const addRateToRecipe = async (req, res) => {
   try {
-    console.log(req.body);
+    console.log(req.body.rate);
     const data = await recipeModel.findById(req.body.id);
     if (!data) {
-      console.log("ERROR_RECIPE_NOT_FOUND");
       return handleHttpError(res, "ERROR_RECIPE_NOT_FOUND", 404);
     }
-    console.log(data);
 
-    // Verificar si el usuario ya calificó esta receta
+    // Verificar si el usuario ya califico esta receta
     if (data.ratings.some((rate) => rate.userId === req.body.userId)) {
       return handleHttpError(res, "ERROR_ALREADY_RATED", 400);
     }
@@ -61,7 +58,7 @@ const addRateToRecipe = async (req, res) => {
     /* if (!Array.isArray(data.ratings)) {
       data.ratings = [];
     } */
-    // Agregar la calificación junto con el ID del usuario
+    // Agregar la calificacion junto con el ID del usuario
     data.ratings.push({ rate: req.body.rate, userId: req.body.userId });
 
     await data.save();

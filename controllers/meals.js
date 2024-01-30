@@ -43,6 +43,7 @@ const getMealsByUserIdAndDate = async (req, res) => {
 const createMeal = async (req, res) => {
   try {
     const data = await mealModel.create(req.body);
+
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_CREATE_MEALS", 500);
@@ -75,8 +76,6 @@ const getCaloriesByDays = async (req, res) => {
     const userId = req.params.id;
     const startDate = new Date(req.params.startDate).toISOString();
     const endDate = new Date(req.params.endDate).toISOString();
-    console.log(startDate);
-    console.log(endDate);
     const filter = {
       userId: userId,
       date: { $gte: startDate, $lte: endDate },

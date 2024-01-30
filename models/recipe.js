@@ -40,7 +40,16 @@ const recipeSchema = new mongoose.Schema(
       required: true,
     },
     foods: {
-      type: [],
+      type: [
+        { type: mongoose.Schema.Types.Mixed, ref: "food", required: true },
+      ],
+      required: true,
+      validate: {
+        validator: function (array) {
+          return array.length > 0;
+        },
+        message: "El array debe contener al menos un elemento.",
+      },
     },
     steps: {
       type: [stepSchema],

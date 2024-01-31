@@ -1,13 +1,14 @@
-const { recipeModel, usersModel } = require("../models");
+const { recipeModel, foodModel } = require("../models");
 const { eventNames } = require("../models/users");
 const { handleHttpError } = require("../utils/handleErrors");
 
-const createRecipe = async (req, res) => {
+/* const createRecipe = async (req, res) => {
   try {
     const name = req.body.name;
     const ingredients = req.body.foods;
     const steps = req.body.steps;
     const creatorId = req.body.userId;
+
 
     const data = await recipeModel.create({
       name: name,
@@ -18,6 +19,39 @@ const createRecipe = async (req, res) => {
 
     res.send({ data });
   } catch (e) {
+    console.log(e);
+    handleHttpError(res, "ERROR_CREATE_RECIPE", 500);
+  }
+}; */
+const createRecipe = async (req, res) => {
+  try {
+    const name = req.body.name;
+    const ingredients = req.body.foods;
+    const steps = req.body.steps;
+    const creatorId = req.body.userId;
+
+    // Validar que cada elemento en el array 'ingredients' tenga el formato específico
+    const isValidIngredients = ingredients.every((ingredient) => {
+      const food = new foodModel(ingredient);
+      return food.validateSync() === undefined;
+    });
+
+    if (!isValidIngredients) {
+      // Si algún elemento en 'ingredients' no tiene el formato correcto, lanzar un error
+      handleHttpError(res, "ERROR_INVALID_INGREDIENTS_FORMAT", 400);
+      return;
+    }
+
+    const data = await recipeModel.create({
+      name: name,
+      foods: ingredients,
+      steps: steps,
+      creator: creatorId,
+    });
+
+    res.send({ data });
+  } catch (e) {
+    console.log(e);
     handleHttpError(res, "ERROR_CREATE_RECIPE", 500);
   }
 };

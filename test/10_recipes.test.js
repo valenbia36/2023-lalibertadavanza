@@ -264,3 +264,31 @@ test("[PUT RATE] Esto deberia retornar un 200", async () => {
     .send(req);
   expect(response1.statusCode).toEqual(200);
 });
+
+test("No se  creo la receta correctamente por datos incorrectos dentro de foods", async () => {
+  const response = await request(app)
+    .post("/api/recipes")
+    .send({
+      name: "Nueva Receta",
+      foods: [
+        {
+          name: "Lomo",
+          calories: 500,
+          weight: "sasas",
+          category: "Carnes Rojas",
+          carbs: 100,
+          proteins: 300,
+          fats: 0,
+          weightConsumed: 11,
+          totalCalories: 11,
+          totalCarbs: 2,
+          totalProteins: 7,
+          totalFats: 0,
+        },
+      ],
+      steps: [{ text: "Paso 1" }],
+      userId: "65aeb07036d8ac71f781636b",
+    });
+
+  expect(response.status).toBe(400);
+});

@@ -1,12 +1,29 @@
 const express = require("express");
 const { weekModel } = require("../models");
 
-const getWeek = async (req, res) => {
+/* const getWeek = async (req, res) => {
   try {
     const userId = req.params.id;
     const weeks = await weekModel.find({ userId: userId });
     res.status(200).json(weeks);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}; */
+const getWeek = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const weeks = await weekModel
+      .find({ userId: userId })
+      .populate({
+        path: "Monday.breakfast Monday.lunch Monday.snack Monday.dinner Tuesday.breakfast Tuesday.lunch Tuesday.snack Tuesday.dinner Wednesday.breakfast Wednesday.lunch Wednesday.snack Wednesday.dinner Thursday.breakfast Thursday.lunch Thursday.snack Thursday.dinner Friday.breakfast Friday.lunch Friday.snack Friday.dinner Saturday.breakfast Saturday.lunch Saturday.snack Saturday.dinner Sunday.breakfast Sunday.lunch Sunday.snack Sunday.dinner",
+      })
+      .exec();
+    console.log(weeks);
+
+    res.status(200).json(weeks);
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };

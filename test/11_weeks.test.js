@@ -33,6 +33,20 @@ test("Se creo la week correctamente con un informacion de un dia vacio", async (
     });
   expect(response.status).toBe(200);
 });
+test("No se creo la week correctamente porque recibe informacion invalida", async () => {
+  const response = await request(app)
+    .put("/api/weeks")
+    .send({
+      userId: "65b96e1981dd456178731ac5",
+      Friday: {
+        breakfast: null,
+        lunch: "",
+        snack: null,
+        dinner: null,
+      },
+    });
+  expect(response.status).toBe(500);
+});
 
 test("Un usuario crea una week y se trae correctamente", async () => {
   const response = await request(app)

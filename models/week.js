@@ -6,7 +6,28 @@ const mealSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     ref: "recipe",
   },
-  lunch: { type: mongoose.Schema.Types.Mixed, ref: "recipe" },
+  lunch: {
+    type: mongoose.Schema.Types.Mixed,
+    ref: "recipe",
+    validate: {
+      validator: async function (value) {
+        // Check if the provided lunch value is a valid recipe
+        const Recipe = mongoose.model("recipe");
+        if (value) {
+          try {
+            // Attempt to find the recipe by ID
+            const isValidRecipe = await Recipe.findById(value);
+            return isValidRecipe !== null;
+          } catch (error) {
+            // Handle any errors during the validation process
+            return false;
+          }
+        }
+        return true; // If lunch is not provided, it is considered valid
+      },
+      message: "Invalid lunch recipe.",
+    },
+  },
   snack: { type: mongoose.Schema.Types.Mixed, ref: "recipe" },
   dinner: { type: mongoose.Schema.Types.Mixed, ref: "recipe" },
 });

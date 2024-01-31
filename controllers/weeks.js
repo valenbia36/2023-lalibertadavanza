@@ -14,12 +14,17 @@ const getWeek = async (req, res) => {
 const saveWeek = async (req, res) => {
   try {
     const updatedPlan = req.body;
-    console.log(req.body);
+    console.log(updatedPlan);
 
-    const userId = req.body.userId;
+    // Validar que userId está presente en el cuerpo de la solicitud
+    if (!updatedPlan.userId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "El userId es obligatorio." });
+    }
 
     const result = await weekModel.findOneAndUpdate(
-      { userId: userId },
+      { userId: updatedPlan.userId },
       updatedPlan,
       {
         new: true,

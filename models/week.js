@@ -20,20 +20,26 @@ const mealSchema = new mongoose.Schema({
   dinner: { type: mongoose.Schema.Types.ObjectId, ref: "recipe" },
 });
 
-const weekSchema = new mongoose.Schema({
-  Monday: mealSchema,
-  Tuesday: mealSchema,
-  Wednesday: mealSchema,
-  Thursday: mealSchema,
-  Friday: mealSchema,
-  Saturday: mealSchema,
-  Sunday: mealSchema,
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
-    required: true,
+const weekSchema = new mongoose.Schema(
+  {
+    Monday: mealSchema,
+    Tuesday: mealSchema,
+    Wednesday: mealSchema,
+    Thursday: mealSchema,
+    Friday: mealSchema,
+    Saturday: mealSchema,
+    Sunday: mealSchema,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: true,
+    },
   },
-});
+  {
+    timestamps: true,
+    versionKey: false,
+  }
+);
 
 weekSchema.plugin(mongooseDelete, { overrideMethods: "all" });
 module.exports = mongoose.model("week", weekSchema);

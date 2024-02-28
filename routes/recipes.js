@@ -1,17 +1,18 @@
 const express = require("express");
 const router = express.Router();
+const { verifyToken } = require("../utils/handleJWT");
 const {
   createRecipe,
   getRecipes,
   getRecipe,
   addRateToRecipe,
-  updateRecipeById
+  updateRecipeById,
 } = require("../controllers/recipes");
 
-router.get("/", getRecipes);
-router.get("/recipes/:id", getRecipe);
-router.post("/", createRecipe);
-router.put("/rate/:id", addRateToRecipe);
-router.put("/:id", updateRecipeById);
+router.get("/", verifyToken, getRecipes);
+router.get("/recipes/:id", verifyToken, getRecipe);
+router.post("/", verifyToken, createRecipe);
+router.put("/rate/:id", verifyToken, addRateToRecipe);
+router.put("/:id", verifyToken, updateRecipeById);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const { mealModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
 
-const getMeals = async (req, res) => {
+/* const getMeals = async (req, res) => {
   try {
     const user = req.user;
     const data = await mealModel.find({});
@@ -9,7 +9,7 @@ const getMeals = async (req, res) => {
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }
-};
+}; */
 
 const getMealsByUserId = async (req, res) => {
   try {
@@ -154,7 +154,6 @@ const getCaloriesBetweenDays = async (req, res) => {
 };
 
 module.exports = {
-  getMeals,
   createMeal,
   getMealsByUserId,
   getMealsByUserIdAndDate,

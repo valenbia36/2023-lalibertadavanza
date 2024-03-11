@@ -7,7 +7,7 @@
 
 1. Clona este repositorio:
 
-   git clone https://github.com/valenbia36/2023-lalibertadavanza.git)https://github.com/valenbia36/2023-lalibertadavanza.git
+   git clone https://github.com/valenbia36/2023-lalibertadavanza.git
 
    
 2. Abrir Terminal y navegar al repositorio:

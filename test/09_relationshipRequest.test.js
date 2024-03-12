@@ -3,7 +3,7 @@ const sinon = require("sinon");
 const app = require("../app");
 const { relationshipRequestModel } = require("../models");
 const { usersModel } = require("../models");
-
+const jwt = require("jsonwebtoken");
 let findStubAuth;
 let findStubRelationshipRequest;
 

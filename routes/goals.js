@@ -6,12 +6,13 @@ const {
   updateGoal,
   deleteGoal,
   getActiveGoalsByUserId,
-  getGoalsByUserWithProgress
+  getGoalsByUserWithProgress,
 } = require("../controllers/goals");
+const { verifyToken } = require("../utils/handleJWT");
 
 router.get("/:userId", getGoalsByUserId);
 router.get("/activeGoals/:userId", getActiveGoalsByUserId);
-router.get("/goalsWithProgress/:userId",getGoalsByUserWithProgress)
+router.get("/goalsWithProgress/:userId", getGoalsByUserWithProgress);
 router.post("/", createGoal);
 router.put("/:goalId", updateGoal);
 router.delete("/:goalId", deleteGoal);

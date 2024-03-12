@@ -2,25 +2,47 @@ const request = require("supertest");
 const app = require("../app");
 const { mealModel } = require("../models");
 const sinon = require("sinon");
+const jwt = require("jsonwebtoken");
 
 beforeAll(async () => {
   await mealModel.deleteMany({});
 });
 
 let findStub;
+function generateTestToken() {
+  const genericUserData = {
+    userId: "genericUserId",
+    firstName: "test",
+    lastName: "user",
+    email: "testuser@example.com",
+    sex: "male",
+    age: 25,
+    height: 1.75,
+    weight: 68,
+  };
 
-test("Esto deberia retornar un 403", async () => {
-  const response = await request(app).post("/api/meals").send({
-    name: "",
-    foods: [],
-    date: "20/10/1998",
-    hour: "20:15",
-    calories: 200,
-  });
+  const secretKey = "llave_secreta";
+  const options = { expiresIn: "1h" };
+
+  return jwt.sign(genericUserData, secretKey, options);
+}
+test("A meal cannot be created without name", async () => {
+  const testToken = generateTestToken();
+  const response = await request(app)
+    .post("/api/meals")
+    .send({
+      name: "",
+      foods: [],
+      date: "20/10/1998",
+      hour: "20:15",
+      calories: 200,
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
 });
 
 test("Se creo la comida correctamente", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/meals")
     .send({
@@ -40,15 +62,17 @@ test("Se creo la comida correctamente", async () => {
       date: new Date(),
       hour: "20:15",
       calories: 200,
-      carbs:10,
-      proteins:10,
-      fats:10,
+      carbs: 10,
+      proteins: 10,
+      fats: 10,
       userId: "987654321",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
 });
 
 test("[DELETE MEAL] Esto deberia retornar un 200", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/meals")
     .send({
@@ -69,16 +93,20 @@ test("[DELETE MEAL] Esto deberia retornar un 200", async () => {
       hour: "20:15",
       calories: 200,
       userId: "987654321",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
 
   const responseParsed = JSON.parse(response.text);
   const mealId = responseParsed.data._id;
 
-  const response1 = await request(app).delete("/api/meals/" + mealId);
+  const response1 = await request(app)
+    .delete("/api/meals/" + mealId)
+    .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
 });
 
 test("[UPDATE MEAL] Esto deberia retornar un 200", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/meals")
     .send({
@@ -99,7 +127,8 @@ test("[UPDATE MEAL] Esto deberia retornar un 200", async () => {
       hour: "20:15",
       calories: 200,
       userId: "987654321",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
 
   const responseParsed = JSON.parse(response.text);
   const mealId = responseParsed.data._id;
@@ -162,8 +191,8 @@ test("[GET MEALS BY USER ID AND DATE] Esto deberia retornar un 200", async () =>
   const fechaActual = new Date();
   // Obtener el año, mes y día
   const año = fechaActual.getFullYear();
-  const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0'); // Los meses son indexados desde 0
-  const dia = fechaActual.getDate().toString().padStart(2, '0');
+  const mes = (fechaActual.getMonth() + 1).toString().padStart(2, "0"); // Los meses son indexados desde 0
+  const dia = fechaActual.getDate().toString().padStart(2, "0");
 
   // Formatear la fecha como "YYYY-MM-DD"
   const fechaFormateada = `${año}-${mes}-${dia}`;
@@ -190,7 +219,7 @@ test("[GET MEALS BY USER ID AND DATE] Esto deberia retornar un 200", async () =>
     });
 
   const response1 = await request(app).get(
-    "/api/meals/user/987654321/date/"+fechaFormateada,
+    "/api/meals/user/987654321/date/" + fechaFormateada
   );
   expect(response1.statusCode).toEqual(200);
 });
@@ -217,12 +246,16 @@ test("[GET CALORIES BY USER ID AND MONTH] Esto deberia retornar un 200", async (
       calories: 200,
       userId: "987654321",
     });
-    const startDate = encodeURI("Mon Jan 29 2024 00:00:00 GMT-0300 (hora estándar de Argentina)")
+  const startDate = encodeURI(
+    "Mon Jan 29 2024 00:00:00 GMT-0300 (hora estándar de Argentina)"
+  );
 
-    const endDate = encodeURI("Mon Feb 12 2024 00:00:52 GMT-0300 (hora estándar de Argentina)")
-    
+  const endDate = encodeURI(
+    "Mon Feb 12 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
+  );
+
   const response1 = await request(app).get(
-    "/api/meals/user/987654321/between/"+startDate+"/"+endDate
+    "/api/meals/user/987654321/between/" + startDate + "/" + endDate
   );
   expect(response1.statusCode).toEqual(200);
 });
@@ -260,11 +293,15 @@ test("[GET CALORIES BY USER ID BETWEEN DAYS] Esto deberia retornar un 200", asyn
       userId: "987654321",
     });
 
-  const startDate = encodeURI("Mon Jan 29 2024 00:00:00 GMT-0300 (hora estándar de Argentina)")
+  const startDate = encodeURI(
+    "Mon Jan 29 2024 00:00:00 GMT-0300 (hora estándar de Argentina)"
+  );
 
-  const endDate = encodeURI("Mon Feb 12 2024 00:00:52 GMT-0300 (hora estándar de Argentina)")
+  const endDate = encodeURI(
+    "Mon Feb 12 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
+  );
   const response1 = await request(app).get(
-    "/api/meals/user/987654321/startDate/"+startDate+"/endDate/"+endDate
+    "/api/meals/user/987654321/startDate/" + startDate + "/endDate/" + endDate
   );
   expect(response1.statusCode).toEqual(200);
 });

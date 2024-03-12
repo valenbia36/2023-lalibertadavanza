@@ -38,10 +38,6 @@ const userSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    role: {
-      type: String,
-      enum: ["user", "admin", "nutritionist"],
-    },
     nutritionist: {
       type: Schema.Types.ObjectId,
       ref: "users",

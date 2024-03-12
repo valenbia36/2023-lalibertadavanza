@@ -4,12 +4,30 @@ const { createRecipe, updateRecipeById } = require("../controllers/recipes");
 const { recipeModel } = require("../models");
 const mongoose = require("mongoose");
 const sinon = require("sinon");
-
+const jwt = require("jsonwebtoken");
 beforeAll(async () => {
   await recipeModel.deleteMany({});
 });
+function generateTestToken() {
+  const genericUserData = {
+    userId: "genericUserId",
+    firstName: "test",
+    lastName: "user",
+    email: "testuser@example.com",
+    sex: "male",
+    age: 25,
+    height: 1.75,
+    weight: 68,
+  };
 
-test("No se creo la receta correctamente por data incorrecta", async () => {
+  const secretKey = "llave_secreta";
+  const options = { expiresIn: "1h" };
+
+  return jwt.sign(genericUserData, secretKey, options);
+}
+
+test("A recipe cannot be created without a name and throws and error", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/recipes")
     .send({
@@ -17,13 +35,15 @@ test("No se creo la receta correctamente por data incorrecta", async () => {
       foods: ["Ingrediente1", "Ingrediente2"],
       steps: [{ text: "Paso 1" }],
       userId: "",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response.status).toBe(500);
   expect(response.body).toHaveProperty("status", 500);
   expect(response.body).toHaveProperty("message", "ERROR_CREATE_RECIPE");
 });
 
-test("Se creo la receta correctamente", async () => {
+test("A recipe is successfully cretaed and store in the DB", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/recipes")
     .send({
@@ -46,15 +66,17 @@ test("Se creo la receta correctamente", async () => {
       ],
       steps: [{ text: "Paso 1" }],
       userId: "65aeb07036d8ac71f781636b",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
 
   expect(response.status).toBe(200);
   expect(response.body).toHaveProperty("data");
-  // Asegúrate de que se haya creado correctamente en la base de datos
   const recipe = await recipeModel.findById(response.body.data._id);
   expect(recipe).not.toBeNull();
 });
+
 test("No se creo la receta correctamente por formato de imagen incorrecta", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/recipes")
     .send({
@@ -77,12 +99,14 @@ test("No se creo la receta correctamente por formato de imagen incorrecta", asyn
       ],
       steps: [{ text: "Paso 1", images: ["Asas"] }],
       userId: "65aeb07036d8ac71f781636b",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
 
   expect(response.status).toBe(500);
 });
 
 test("Se creo la receta correctamente con multiples alimentos", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/recipes")
     .send({
@@ -119,7 +143,8 @@ test("Se creo la receta correctamente con multiples alimentos", async () => {
       ],
       steps: [{ text: "Paso 1" }],
       userId: "65aeb07036d8ac71f781636b",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
 
   expect(response.status).toBe(200);
   expect(response.body).toHaveProperty("data");
@@ -129,6 +154,7 @@ test("Se creo la receta correctamente con multiples alimentos", async () => {
 });
 
 test("[UPDATE RECIPE] Esto deberia retornar un 200", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/recipes")
     .send({
@@ -151,7 +177,8 @@ test("[UPDATE RECIPE] Esto deberia retornar un 200", async () => {
       ],
       steps: [{ text: "Paso 1" }],
       userId: "65aeb07036d8ac71f781636b",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
   const responseParsed = JSON.parse(response.text);
   const mealId = responseParsed.data._id;
 
@@ -159,11 +186,13 @@ test("[UPDATE RECIPE] Esto deberia retornar un 200", async () => {
     .put("/api/recipes/" + mealId)
     .send({
       name: "Receta Modificada",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
 });
 
 test("[UPDATE RECIPE] Esto deberia retornar un 500", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/recipes")
     .send({
@@ -186,7 +215,8 @@ test("[UPDATE RECIPE] Esto deberia retornar un 500", async () => {
       ],
       steps: [{ text: "Paso 1" }],
       userId: "65aeb07036d8ac71f781636b",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
   const responseParsed = JSON.parse(response.text);
   const mealId = "2222";
 
@@ -194,11 +224,13 @@ test("[UPDATE RECIPE] Esto deberia retornar un 500", async () => {
     .put("/api/recipes/" + mealId)
     .send({
       name: "Receta Modificada",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(500);
 });
 
 test("[GET RECIPES] Esto deberia retornar un 200", async () => {
+  const testToken = generateTestToken();
   const recipe = {
     name: "Nueva Receta",
     foods: [
@@ -220,16 +252,22 @@ test("[GET RECIPES] Esto deberia retornar un 200", async () => {
     steps: [{ text: "Paso 1" }],
     userId: "65aeb07036d8ac71f781636b",
   };
-  const response = await request(app).post("/api/recipes").send(recipe);
+  const response = await request(app)
+    .post("/api/recipes")
+    .send(recipe)
+    .set("Authorization", "Bearer " + testToken);
   expect(response.body).toHaveProperty("data");
   // Asegúrate de que se haya creado correctamente en la base de datos
   const recipeGot = await recipeModel.findById(response.body.data._id);
 
-  const response1 = await request(app).get("/api/recipes");
+  const response1 = await request(app)
+    .get("/api/recipes")
+    .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
 });
 
 test("[PUT RATE] Esto deberia retornar un 200", async () => {
+  const testToken = generateTestToken();
   const recipe = {
     name: "Nueva Receta",
     foods: [
@@ -251,7 +289,10 @@ test("[PUT RATE] Esto deberia retornar un 200", async () => {
     steps: [{ text: "Paso 1" }],
     userId: "65aeb07036d8ac71f781636b",
   };
-  const response = await request(app).post("/api/recipes").send(recipe);
+  const response = await request(app)
+    .post("/api/recipes")
+    .send(recipe)
+    .set("Authorization", "Bearer " + testToken);
   const responseParsed = JSON.parse(response.text);
   const mealId = responseParsed.data._id;
   const req = {
@@ -261,11 +302,13 @@ test("[PUT RATE] Esto deberia retornar un 200", async () => {
   };
   const response1 = await request(app)
     .put("/api/recipes/rate/" + mealId)
-    .send(req);
+    .send(req)
+    .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
 });
 
 test("No se  creo la receta correctamente por datos incorrectos dentro de foods", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/recipes")
     .send({
@@ -288,7 +331,8 @@ test("No se  creo la receta correctamente por datos incorrectos dentro de foods"
       ],
       steps: [{ text: "Paso 1" }],
       userId: "65aeb07036d8ac71f781636b",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
 
   expect(response.status).toBe(400);
 });

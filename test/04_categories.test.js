@@ -2,11 +2,27 @@ const request = require("supertest");
 const app = require("../app");
 const { categoryModel } = require("../models");
 const sinon = require("sinon");
-
+const jwt = require("jsonwebtoken");
 beforeAll(async () => {
   await categoryModel.deleteMany({});
 });
+function generateTestToken() {
+  const genericUserData = {
+    userId: "genericUserId",
+    firstName: "test",
+    lastName: "user",
+    email: "testuser@example.com",
+    sex: "male",
+    age: 25,
+    height: 1.75,
+    weight: 68,
+  };
 
+  const secretKey = "llave_secreta";
+  const options = { expiresIn: "1h" };
+
+  return jwt.sign(genericUserData, secretKey, options);
+}
 test("Esto deberia retornar un 403", async () => {
   const response = await request(app).post("/api/category").send({
     name: "",

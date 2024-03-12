@@ -6,6 +6,7 @@ const {
   getActiveIntermittentFastingByUserId,
   deleteActiveIntermittentFasting,
 } = require("../controllers/intermittentFasting");
+const { verifyToken } = require("../utils/handleJWT");
 
 router.post("/", createIntermittentFasting);
 router.get("/:userId", getIntermittentFastingByUserId);

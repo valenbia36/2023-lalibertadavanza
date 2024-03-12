@@ -1,6 +1,11 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { createWaterGlass, getWaterGlassByUserId, getWaterGlassForUserIdByDay } = require('../controllers/waterGlass')
+const {
+  createWaterGlass,
+  getWaterGlassByUserId,
+  getWaterGlassForUserIdByDay,
+} = require("../controllers/waterGlass");
+const { verifyToken } = require("../utils/handleJWT");
 
 router.post("/", createWaterGlass);
 router.get("/:userId", getWaterGlassByUserId);

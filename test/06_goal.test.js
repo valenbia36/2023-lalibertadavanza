@@ -2,12 +2,29 @@ const request = require("supertest");
 const app = require("../app");
 const { goalModel } = require("../models");
 const sinon = require("sinon");
-
+const jwt = require("jsonwebtoken");
 beforeAll(async () => {
   await goalModel.deleteMany({});
 });
 
 let findStub;
+function generateTestToken() {
+  const genericUserData = {
+    userId: "genericUserId",
+    firstName: "test",
+    lastName: "user",
+    email: "testuser@example.com",
+    sex: "male",
+    age: 25,
+    height: 1.75,
+    weight: 68,
+  };
+
+  const secretKey = "llave_secreta";
+  const options = { expiresIn: "1h" };
+
+  return jwt.sign(genericUserData, secretKey, options);
+}
 
 test("Se creo el goal semanal correctamente", async () => {
   const response = await request(app).post("/api/goals").send({
@@ -157,7 +174,7 @@ test("[GET ACTIVE GOALS BY USER ID] Esto deberia retornar un 500", async () => {
 });
 
 test("[GET GOALS BY USER ID WITH PROGRESS MONTHLY] Esto deberia retornar un 500", async () => {
-  findStub.throws(new Error('Database error'));
+  findStub.throws(new Error("Database error"));
   const response = await request(app).get(
     "/api/goals/goalsWithProgress/987654321"
   );

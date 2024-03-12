@@ -26,10 +26,13 @@ const saveWeek = async (req, res) => {
   try {
     const updatedPlan = req.body;
 
-    if (!updatedPlan.userId) {
+    /* if (!updatedPlan.userId) {
       return res
         .status(400)
         .json({ success: false, error: "El userId es obligatorio." });
+    } */
+    if (req.user._id != updatedPlan.userId) {
+      return handleHttpError(res, "UNAUTHORIZED", 403);
     }
 
     const result = await weekModel.findOneAndUpdate(

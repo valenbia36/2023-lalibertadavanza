@@ -1,5 +1,6 @@
 const { mealModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
+const jwt = require("jsonwebtoken");
 
 /* const getMeals = async (req, res) => {
   try {
@@ -13,9 +14,21 @@ const { handleHttpError } = require("../utils/handleErrors");
 
 const getMealsByUserId = async (req, res) => {
   try {
-    const user = req.user;
-    const data = await mealModel.find({ userId: req.params.id });
-    res.send({ data, user });
+    const userId = req.userId;
+    const data = await mealModel.find({ userId: userId });
+    const modifiedData = data.map((item) => ({
+      _id: item._id,
+      name: item.name,
+      foods: item.foods,
+      date: item.date,
+      hour: item.hour,
+      calories: item.calories,
+      carbs: item.carbs,
+      proteins: item.proteins,
+      fats: item.fats,
+    }));
+
+    res.send({ data: modifiedData });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }
@@ -23,10 +36,10 @@ const getMealsByUserId = async (req, res) => {
 
 const getMealsByUserIdAndDate = async (req, res) => {
   try {
-    const user = req.user;
+    const userId = req.userId;
 
     const filter = {
-      userId: req.params.id,
+      userId: userId,
       date: {
         $gte: new Date(`${req.params.date}T00:00:00.000Z`),
         $lt: new Date(`${req.params.date}T23:59:59.999Z`),
@@ -34,7 +47,7 @@ const getMealsByUserIdAndDate = async (req, res) => {
     };
 
     const data = await mealModel.find(filter);
-    res.send({ data, user });
+    res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }
@@ -42,8 +55,14 @@ const getMealsByUserIdAndDate = async (req, res) => {
 
 const createMeal = async (req, res) => {
   try {
-    const data = await mealModel.create(req.body);
+    // Accede al userId desde req.body
+    const userId = req.userId;
 
+    // Agrega el userId a los datos de la comida antes de crearla
+    const mealData = { ...req.body, userId };
+    const data = await mealModel.create(mealData);
+
+    //res.status(200).end();
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_CREATE_MEALS", 500);
@@ -64,8 +83,25 @@ const updateMealById = async (req, res) => {
 
 const deleteMealById = async (req, res) => {
   try {
-    const data = await mealModel.delete({ _id: req.params.id });
-    res.send({ data });
+    // Obtener el userId de la solicitud
+    const userId = req.userId;
+
+    // Obtener la meal por el _id
+    const mealToDelete = await mealModel.findOne({ _id: req.params.id });
+
+    // Verificar si la meal existe y si el userId coincide
+    if (!mealToDelete || mealToDelete.userId !== userId) {
+      return res
+        .status(403)
+        .json({ message: "No tienes permiso para borrar esta meal." });
+    }
+
+    // Borrar la meal si todo está bien
+    const deletedMeal = await mealModel.deleteOne({ _id: req.params.id });
+
+    res
+      .status(200)
+      .json({ message: "Meal borrada exitosamente", data: deletedMeal });
   } catch (e) {
     handleHttpError(res, "ERROR_DELETE_MEAL", 500);
   }
@@ -74,7 +110,7 @@ const deleteMealById = async (req, res) => {
 const getCaloriesByDays = async (req, res) => {
   try {
     console.log(req.params.startDate);
-    const userId = req.params.id;
+    const userId = req.userId;
     const startDate = new Date(req.params.startDate).toISOString();
     const endDate = new Date(req.params.endDate).toISOString();
     const filter = {
@@ -132,7 +168,7 @@ const getCaloriesByDays = async (req, res) => {
 
 const getCaloriesBetweenDays = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.userId;
     const startDate = req.params.startDate;
     const endDate = req.params.endDate;
     const filter = {

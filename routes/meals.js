@@ -11,19 +11,27 @@ const {
   getCaloriesByDays,
 } = require("../controllers/meals");
 const { validatorCreateMeal } = require("../validators/meals");
+const extractUserIdMiddleware = require("../utils/handleUserID");
 
-router.get("/user/:id", verifyToken, getMealsByUserId);
-router.get("/user/:id/date/:date", verifyToken, getMealsByUserIdAndDate);
-router.post("/", verifyToken, validatorCreateMeal, createMeal);
-router.put("/:id", verifyToken, updateMealById);
-router.delete("/:id", verifyToken, deleteMealById);
+router.get("/user/", verifyToken, extractUserIdMiddleware, getMealsByUserId);
 router.get(
-  "/user/:id/between/:startDate/:endDate",
+  "/user/date/:date",
+  extractUserIdMiddleware,
+  verifyToken,
+  getMealsByUserIdAndDate
+);
+router.post("/", verifyToken, extractUserIdMiddleware, createMeal);
+router.put("/:id", verifyToken, extractUserIdMiddleware, updateMealById);
+router.delete("/:id", verifyToken, extractUserIdMiddleware, deleteMealById);
+router.get(
+  "/user/between/:startDate/:endDate",
+  extractUserIdMiddleware,
   verifyToken,
   getCaloriesByDays
 );
 router.get(
-  "/user/:id/startDate/:startDate/endDate/:endDate",
+  "/user/startDate/:startDate/endDate/:endDate",
+  extractUserIdMiddleware,
   verifyToken,
   getCaloriesBetweenDays
 );

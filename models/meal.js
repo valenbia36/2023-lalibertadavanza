@@ -5,6 +5,7 @@ const mealSchema = new mongoose.Schema(
   {
     name: {
       type: String,
+      required: true,
     },
     foods: {
       type: [
@@ -46,6 +47,7 @@ const mealSchema = new mongoose.Schema(
     },
     userId: {
       type: String,
+      required: true,
     },
   },
   {

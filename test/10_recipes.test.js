@@ -34,7 +34,6 @@ test("A recipe cannot be created without a name and throws and error", async () 
       name: "",
       foods: ["Ingrediente1", "Ingrediente2"],
       steps: [{ text: "Paso 1" }],
-      userId: "",
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response.status).toBe(500);
@@ -65,7 +64,6 @@ test("A recipe is successfully cretaed and store in the DB", async () => {
         },
       ],
       steps: [{ text: "Paso 1" }],
-      userId: "65aeb07036d8ac71f781636b",
     })
     .set("Authorization", "Bearer " + testToken);
 

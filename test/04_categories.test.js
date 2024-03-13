@@ -21,9 +21,10 @@ function generateTestToken() {
   const secretKey = "llave_secreta";
   const options = { expiresIn: "1h" };
 
-  return jwt.sign(genericUserData, secretKey, options);
+  return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
 test("Esto deberia retornar un 403", async () => {
+  const testToken = generateTestToken();
   const response = await request(app).post("/api/category").send({
     name: "",
   });
@@ -31,18 +32,34 @@ test("Esto deberia retornar un 403", async () => {
 });
 
 test("Se creo la categoria correctamente", async () => {
-  const response = await request(app).post("/api/category").send({
-    name: "Verduras",
-  });
+  const response = await request(app)
+    .post("/api/category")
+    .send({
+      name: "Verduras",
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
 });
 
 test("Se obtuvieron las categorias correctamente [200]", async () => {
-  const response = await request(app).get("/api/category");
-  expect(response.statusCode).toEqual(200);
+  const testToken = generateTestToken();
+  const response = await request(app)
+    .post("/api/category")
+    .send({
+      name: "Verduras",
+    })
+    .set("Authorization", "Bearer " + testToken);
+  const response1 = await request(app)
+    .get("/api/category")
+    .set("Authorization", "Bearer " + testToken);
+  expect(response1.statusCode).toEqual(200);
+  const responseParsed = JSON.parse(response1.text);
+  console.log(responseParsed);
+  expect(responseParsed.data);
 });
 
 test("[CREATE CATEGORY] Esto debe retornar un error 500", async () => {
+  const testToken = generateTestToken();
   sinon.stub(categoryModel, "create").throws(new Error("Database error"));
 
   const response = await request(app).post("/api/category").send({

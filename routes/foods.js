@@ -12,6 +12,6 @@ const { verifyToken } = require("../utils/handleJWT");
 
 router.get("/", verifyToken, getFoods);
 router.get("/category/:categoryName", verifyToken, getFoodsByCategory);
-router.post("/", validatorCreateFood, createFood);
+router.post("/", validatorCreateFood, verifyToken, createFood);
 
 module.exports = router;

@@ -174,6 +174,44 @@ test("Can't delete a meal from another user", async () => {
     .set("Authorization", "Bearer " + testToken2);
   expect(response1.statusCode).toEqual(403);
 });
+test("Can't edit a meal from another user", async () => {
+  const testToken = generateTestToken();
+  const testToken2 = generateTestToken2();
+  const response = await request(app)
+    .post("/api/meals")
+    .send({
+      name: "Carne con papas",
+      foods: [
+        {
+          name: "Papa",
+          calories: "10",
+          quantity: 1,
+        },
+        {
+          name: "Lomo",
+          calories: "20",
+          quantity: 1,
+        },
+      ],
+      date: new Date(),
+      hour: "20:15",
+      calories: 200,
+    })
+    .set("Authorization", "Bearer " + testToken);
+
+  const responseParsed = JSON.parse(response.text);
+  const mealId = responseParsed.data._id;
+  const mealBeforeDelete = await mealModel.findById(mealId);
+  expect(mealBeforeDelete).toBeTruthy();
+
+  const response1 = await request(app)
+    .put("/api/meals/" + mealId)
+    .send({
+      name: "Carne con papas modificada",
+    })
+    .set("Authorization", "Bearer " + testToken2);
+  expect(response1.statusCode).toEqual(404);
+});
 
 test("Updating a meal should return a 200 status code and it should be updated in the DB", async () => {
   const testToken = generateTestToken();

@@ -6,9 +6,15 @@ const {
   getWaterGlassForUserIdByDay,
 } = require("../controllers/waterGlass");
 const { verifyToken } = require("../utils/handleJWT");
+const extractUserIdMiddleware = require("../utils/handleUserID");
 
-router.post("/", createWaterGlass);
-router.get("/:userId", getWaterGlassByUserId);
-router.get("/countByDay/:userId", getWaterGlassForUserIdByDay);
+router.post("/", verifyToken, extractUserIdMiddleware, createWaterGlass);
+router.get("/", verifyToken, extractUserIdMiddleware, getWaterGlassByUserId);
+router.get(
+  "/countByDay/",
+  verifyToken,
+  extractUserIdMiddleware,
+  getWaterGlassForUserIdByDay
+);
 
 module.exports = router;

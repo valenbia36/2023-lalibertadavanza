@@ -21,25 +21,41 @@ function generateTestToken() {
   const secretKey = "llave_secreta";
   const options = { expiresIn: "1h" };
 
-  return jwt.sign(genericUserData, secretKey, options);
+  return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
 test("Se creo el water glass correctamente", async () => {
-  const response = await request(app).post("/api/waterGlass").send({
-    startDate: "2023-10-22T03:00:15.454Z",
-    userId: "987654321",
-  });
+  const testToken = generateTestToken();
+  const response = await request(app)
+    .post("/api/waterGlass")
+    .send({
+      startDate: "2023-10-22T03:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
 });
 
 test("Se obtuvieron los water glass for user id by day correctamente", async () => {
-  const response = await request(app).get(
-    "/api/waterGlass/countByDay/987654321"
-  );
-  expect(response.statusCode).toEqual(200);
+  const testToken = generateTestToken();
+  const response = await request(app)
+    .post("/api/waterGlass")
+    .send({
+      startDate: "2023-10-22T03:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
+
+  const response1 = await request(app)
+    .get("/api/waterGlass/countByDay/")
+    .set("Authorization", "Bearer " + testToken);
+  const response1Parsed = JSON.parse(response1.text);
+  expect(response1.statusCode).toEqual(200);
+  expect(response1Parsed.result[0].count).toEqual(1);
 });
 
 test("Se obtuvieron los water glass by user id correctamente", async () => {
-  const response = await request(app).get("/api/waterGlass/987654321");
+  const testToken = generateTestToken();
+  const response = await request(app)
+    .get("/api/waterGlass")
+    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
 });
 

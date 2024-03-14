@@ -23,15 +23,19 @@ function generateTestToken() {
 
   return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
-test("Esto deberia retornar un 403", async () => {
+test("Category can't be created without a name and validator returns a 403", async () => {
   const testToken = generateTestToken();
-  const response = await request(app).post("/api/category").send({
-    name: "",
-  });
+  const response = await request(app)
+    .post("/api/category")
+    .send({
+      name: "",
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
 });
 
-test("Se creo la categoria correctamente", async () => {
+test("Category is succesfully created, stored in the DB and returns a 200", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/category")
     .send({
@@ -39,9 +43,14 @@ test("Se creo la categoria correctamente", async () => {
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
+  const responseParsed = JSON.parse(response.text);
+  const categoryId = responseParsed.data._id;
+  const category = await categoryModel.findById(categoryId);
+  expect(category).toBeTruthy();
+  expect(category.name).toEqual("Verduras");
 });
 
-test("Se obtuvieron las categorias correctamente [200]", async () => {
+test("GET requests is succesfully made after a POST, getting the correct category and receving a 200", async () => {
   const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/category")
@@ -54,23 +63,28 @@ test("Se obtuvieron las categorias correctamente [200]", async () => {
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
   const responseParsed = JSON.parse(response1.text);
-  console.log(responseParsed);
-  expect(responseParsed.data);
+  expect(responseParsed.data[0].name).toEqual("Verduras");
 });
 
-test("[CREATE CATEGORY] Esto debe retornar un error 500", async () => {
+test("Creating a category with database error should return a 500 status code", async () => {
   const testToken = generateTestToken();
   sinon.stub(categoryModel, "create").throws(new Error("Database error"));
 
-  const response = await request(app).post("/api/category").send({
-    name: "Verduras",
-  });
+  const response = await request(app)
+    .post("/api/category")
+    .send({
+      name: "Verduras",
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(500);
 });
 
-test("[GET CATEGORIES] Esto debe retornar un error 500", async () => {
+test("Retrieving categories with database error should return a 500 status code", async () => {
+  const testToken = generateTestToken();
   sinon.stub(categoryModel, "find").throws(new Error("Database error"));
 
-  const response = await request(app).get("/api/category");
+  const response = await request(app)
+    .get("/api/category")
+    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(500);
 });

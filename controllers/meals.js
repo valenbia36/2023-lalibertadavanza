@@ -71,11 +71,21 @@ const createMeal = async (req, res) => {
 
 const updateMealById = async (req, res) => {
   try {
-    const data = await mealModel.findOneAndUpdate(
-      { _id: req.params.id },
+    const userId = req.userId;
+    const mealId = req.params.id;
+
+    // Primero, verificamos si la comida pertenece al usuario actual
+    const meal = await mealModel.findOne({ _id: mealId, userId: userId });
+    if (!meal) {
+      return handleHttpError(res, "Meal not found or unauthorized", 404);
+    }
+
+    // Si la comida pertenece al usuario, procedemos a actualizarla
+    const updatedMeal = await mealModel.findOneAndUpdate(
+      { _id: mealId },
       req.body
     );
-    res.send({ data });
+    res.send({ data: updatedMeal });
   } catch (e) {
     handleHttpError(res, "ERROR_UPDATE_MEAL", 500);
   }

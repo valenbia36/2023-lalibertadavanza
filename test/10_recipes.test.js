@@ -1,12 +1,12 @@
 const request = require("supertest");
 const app = require("../app");
-const { createRecipe, updateRecipeById } = require("../controllers/recipes");
-const { recipeModel } = require("../models");
+const { recipeModel, usersModel } = require("../models");
 const mongoose = require("mongoose");
 const sinon = require("sinon");
 const jwt = require("jsonwebtoken");
 beforeAll(async () => {
   await recipeModel.deleteMany({});
+  await usersModel.deleteMany({});
 });
 function generateTestToken() {
   const genericUserData = {
@@ -23,7 +23,7 @@ function generateTestToken() {
   const secretKey = "llave_secreta";
   const options = { expiresIn: "1h" };
 
-  return jwt.sign(genericUserData, secretKey, options);
+  return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
 
 test("A recipe cannot be created without a name and throws and error", async () => {
@@ -42,8 +42,18 @@ test("A recipe cannot be created without a name and throws and error", async () 
 });
 
 test("A recipe is successfully cretaed and store in the DB", async () => {
-  const testToken = generateTestToken();
-  const response = await request(app)
+  const response = await request(app).post("/api/auth/register").send({
+    firstName: "test",
+    lastName: "user",
+    email: "adminuser@admin.com",
+    password: "adminuser",
+    sex: "male",
+    age: "23",
+    height: "1.80",
+    weight: "70",
+  });
+  expect(response.statusCode).toEqual(200);
+  const response2 = await request(app)
     .post("/api/recipes")
     .send({
       name: "Nueva Receta",
@@ -65,11 +75,10 @@ test("A recipe is successfully cretaed and store in the DB", async () => {
       ],
       steps: [{ text: "Paso 1" }],
     })
-    .set("Authorization", "Bearer " + testToken);
-
-  expect(response.status).toBe(200);
-  expect(response.body).toHaveProperty("data");
-  const recipe = await recipeModel.findById(response.body.data._id);
+    .set("Authorization", "Bearer " + response._body.token);
+  expect(response2.status).toBe(200);
+  expect(response2.body).toHaveProperty("data");
+  const recipe = await recipeModel.findById(response2.body.data._id);
   expect(recipe).not.toBeNull();
 });
 
@@ -96,7 +105,6 @@ test("No se creo la receta correctamente por formato de imagen incorrecta", asyn
         },
       ],
       steps: [{ text: "Paso 1", images: ["Asas"] }],
-      userId: "65aeb07036d8ac71f781636b",
     })
     .set("Authorization", "Bearer " + testToken);
 
@@ -140,7 +148,6 @@ test("Se creo la receta correctamente con multiples alimentos", async () => {
         },
       ],
       steps: [{ text: "Paso 1" }],
-      userId: "65aeb07036d8ac71f781636b",
     })
     .set("Authorization", "Bearer " + testToken);
 

@@ -21,7 +21,7 @@ function generateTestToken() {
   const secretKey = "llave_secreta";
   const options = { expiresIn: "1h" };
 
-  return jwt.sign(genericUserData, secretKey, options);
+  return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
 
 test("Se creo el intermittent fasting correctamente", async () => {

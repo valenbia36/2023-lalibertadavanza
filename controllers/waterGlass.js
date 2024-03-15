@@ -5,7 +5,14 @@ const createWaterGlass = async (req, res) => {
   try {
     const userId = req.userId;
     const data = await waterGlassModel.create({ ...req.body, userId: userId });
-    res.send({ data });
+
+    // Convertir el documento Mongoose a un objeto de JavaScript estándar
+    const dataObject = data.toObject();
+
+    // Eliminar la propiedad 'userId' del objeto
+    delete dataObject.userId;
+
+    res.send({ data: dataObject });
   } catch (e) {
     handleHttpError(res, "ERROR_CREATE_WATER_GLASS", 500);
   }
@@ -15,6 +22,7 @@ const getWaterGlassByUserId = async (req, res) => {
   try {
     const userId = req.userId;
     const data = await waterGlassModel.find({ userId: userId });
+
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_WATER_GLASS_BY_USER_ID", 500);

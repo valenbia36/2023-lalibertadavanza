@@ -38,10 +38,6 @@ const userSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    nutritionist: {
-      type: Schema.Types.ObjectId,
-      ref: "users",
-    },
     secretToken: {
       type: String,
     },

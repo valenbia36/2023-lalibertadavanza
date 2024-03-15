@@ -25,7 +25,7 @@ function generateTestToken() {
   const secretKey = "llave_secreta";
   const options = { expiresIn: "1h" };
 
-  return jwt.sign(genericUserData, secretKey, options);
+  return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
 
 test("User tries to login with a non existing account an recieves an error (404)", async () => {
@@ -49,10 +49,9 @@ test("User sign up is succesfull and new user its stored in the DB", async () =>
   });
   expect(response.statusCode).toEqual(200);
   const responseParsed = JSON.parse(response.text);
-  const testToken = generateTestToken();
   const response1 = await request(app)
-    .get("/api/auth/users/" + responseParsed.user._id)
-    .set("Authorization", "Bearer " + testToken);
+    .get("/api/auth/users/")
+    .set("Authorization", "Bearer " + response._body.token);
   expect(response1.body.data.firstName).toEqual("test");
   expect(response1.body.data.lastName).toEqual("user");
   expect(response1.body.data.email).toEqual("adminuser@admin.com");
@@ -68,14 +67,6 @@ test("User tries to login with an incorrect password and gets an error", async (
     password: "error",
   });
   expect(response.statusCode).toEqual(401);
-});
-
-test("Request for getting al the users in the DB returns the complete list and a 200 ", async () => {
-  const testToken = generateTestToken();
-  const response = await request(app)
-    .get("/api/auth/users")
-    .set("Authorization", "Bearer " + testToken);
-  expect(response.statusCode).toEqual(200);
 });
 
 test("A user sign up and then update his password, getting an 200 for confirmation", async () => {
@@ -94,7 +85,7 @@ test("A user sign up and then update his password, getting an 200 for confirmati
   const responseParsed = JSON.parse(response.text);
 
   const response1 = await request(app)
-    .put("/api/auth/users/updatePassword/" + responseParsed.user._id)
+    .put("/api/auth/users/updatePassword/")
     .send({
       password: "newPassword",
     })

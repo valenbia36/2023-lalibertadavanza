@@ -16,8 +16,8 @@ const extractUserIdMiddleware = require("../utils/handleUserID");
 router.get("/user/", verifyToken, extractUserIdMiddleware, getMealsByUserId);
 router.get(
   "/user/date/:date",
-  extractUserIdMiddleware,
   verifyToken,
+  extractUserIdMiddleware,
   getMealsByUserIdAndDate
 );
 router.post("/", verifyToken, extractUserIdMiddleware, createMeal);
@@ -25,14 +25,14 @@ router.put("/:id", verifyToken, extractUserIdMiddleware, updateMealById);
 router.delete("/:id", verifyToken, extractUserIdMiddleware, deleteMealById);
 router.get(
   "/user/between/:startDate/:endDate",
-  extractUserIdMiddleware,
   verifyToken,
+  extractUserIdMiddleware,
   getCaloriesByDays
 );
 router.get(
   "/user/startDate/:startDate/endDate/:endDate",
-  extractUserIdMiddleware,
   verifyToken,
+  extractUserIdMiddleware,
   getCaloriesBetweenDays
 );
 

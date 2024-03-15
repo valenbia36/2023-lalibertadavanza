@@ -164,7 +164,6 @@ test("Can't delete a meal from another user", async () => {
     .set("Authorization", "Bearer " + testToken);
 
   const responseParsed = JSON.parse(response.text);
-  console.log(responseParsed);
   const mealId = responseParsed.data._id;
   const mealBeforeDelete = await mealModel.findById(mealId);
   expect(mealBeforeDelete).toBeTruthy();
@@ -324,7 +323,7 @@ test("Retrieving meals for a user on a specific date should return a 200 status 
 });
 
 test("Calories between two dates should return each day and calories", async () => {
-  const testToken = generateTestToken();
+  const testToken = generateTestToken2();
   const response = await request(app)
     .post("/api/meals")
     .send({

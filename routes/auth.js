@@ -7,7 +7,7 @@ const {
 const {
   registerController,
   loginController,
-  getUsers,
+
   getUser,
   getUserByEmail,
   deleteUser,
@@ -15,13 +15,18 @@ const {
   updateUser,
 } = require("../controllers/auth");
 const { verifyToken } = require("../utils/handleJWT");
+const extractUserIdMiddleware = require("../utils/handleUserID");
 
-router.get("/users", verifyToken, getUsers);
-router.get("/users/:id", verifyToken, getUser);
+router.get("/users/", verifyToken, extractUserIdMiddleware, getUser);
 router.get("/users/email/:email", verifyToken, getUserByEmail);
-router.delete("/users/:id", verifyToken, deleteUser);
-router.put("/users/updatePassword/:id", verifyToken, updateUserPassword);
-router.put("/users/:id", verifyToken, updateUser);
+router.delete("/users/", verifyToken, extractUserIdMiddleware, deleteUser);
+router.put(
+  "/users/updatePassword/",
+  verifyToken,
+  extractUserIdMiddleware,
+  updateUserPassword
+);
+router.put("/users/", verifyToken, extractUserIdMiddleware, updateUser);
 router.post("/register", validatorRegisterUser, registerController);
 router.post("/login", validatorLoginUser, loginController);
 

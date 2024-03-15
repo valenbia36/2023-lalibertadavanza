@@ -46,7 +46,14 @@ const getMealsByUserIdAndDate = async (req, res) => {
       },
     };
 
-    const data = await mealModel.find(filter);
+    let data = await mealModel.find(filter);
+
+    // Remove userId from each object in the data array
+    data = data.map((item) => {
+      const { userId, ...rest } = item.toObject();
+      return rest;
+    });
+
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);
@@ -62,8 +69,11 @@ const createMeal = async (req, res) => {
     const mealData = { ...req.body, userId };
     const data = await mealModel.create(mealData);
 
+    // Eliminar el userId de la respuesta
+    const { userId: removedUserId, ...responseData } = data.toObject();
+
     //res.status(200).end();
-    res.send({ data });
+    res.send({ data: responseData });
   } catch (e) {
     handleHttpError(res, "ERROR_CREATE_MEALS", 500);
   }
@@ -85,7 +95,11 @@ const updateMealById = async (req, res) => {
       { _id: mealId },
       req.body
     );
-    res.send({ data: updatedMeal });
+
+    // Eliminar el userId de la respuesta
+    const { userId: removedUserId, ...responseData } = updatedMeal.toObject();
+
+    res.send({ data: responseData });
   } catch (e) {
     handleHttpError(res, "ERROR_UPDATE_MEAL", 500);
   }
@@ -119,7 +133,6 @@ const deleteMealById = async (req, res) => {
 
 const getCaloriesByDays = async (req, res) => {
   try {
-    console.log(req.params.startDate);
     const userId = req.userId;
     const startDate = new Date(req.params.startDate).toISOString();
     const endDate = new Date(req.params.endDate).toISOString();
@@ -169,7 +182,6 @@ const getCaloriesByDays = async (req, res) => {
         fechasIntermedias[index].calories = calories;
       }
     }
-
     res.send({ fechasIntermedias });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_CALORIES", 500);
@@ -181,6 +193,7 @@ const getCaloriesBetweenDays = async (req, res) => {
     const userId = req.userId;
     const startDate = req.params.startDate;
     const endDate = req.params.endDate;
+
     const filter = {
       userId: userId,
       date: { $gte: startDate, $lte: endDate },

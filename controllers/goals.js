@@ -5,13 +5,19 @@ const { handleHttpError } = require("../utils/handleErrors");
 const getGoalsByUserId = async (req, res) => {
   try {
     const userId = req.userId;
-    console.log(userId);
     if (!userId) {
       return handleHttpError(res, "User ID not provided", 400);
     }
 
     const data = await goalModel.find({ userId: userId });
-    res.send({ data });
+
+    // Eliminar el userId de cada objeto en el array data
+    const responseData = data.map((item) => {
+      const { userId, ...rest } = item.toObject();
+      return rest;
+    });
+
+    res.send({ data: responseData });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_GOALS_BY_USER_ID", 500);
   }

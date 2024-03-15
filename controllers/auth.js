@@ -46,7 +46,6 @@ const loginController = async (req, res) => {
       user,
       status: 200,
     };
-    console.log(data);
     res.send(data);
   } catch (e) {
     handleHttpError(res, "ERROR_LOGIN_USER", 500);
@@ -54,18 +53,10 @@ const loginController = async (req, res) => {
 };
 const logout = async (req, res) => {};
 
-const getUsers = async (req, res) => {
-  try {
-    const data = await usersModel.find({});
-    res.send({ data });
-  } catch (e) {
-    handleHttpError(res, "ERROR_GET_USERS", 500);
-  }
-};
-
 const getUser = async (req, res) => {
   try {
-    const data = await usersModel.findById(req.params.id);
+    const userId = req.userId;
+    const data = await usersModel.findById(userId);
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_USER", 500);
@@ -83,11 +74,12 @@ const getUserByEmail = async (req, res) => {
 
 const updateUserPassword = async (req, res) => {
   try {
+    const userId = req.userId;
     const newPassword = req.body.password;
     const password = await encrypt(newPassword);
 
     const data = await usersModel.findOneAndUpdate(
-      { _id: req.params.id },
+      { _id: userId },
       { password: password }
     );
     res.send({ data });
@@ -99,10 +91,8 @@ const updateUserPassword = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const data = await usersModel.findOneAndUpdate(
-      { _id: req.params.id },
-      req.body
-    );
+    const userId = req.userId;
+    const data = await usersModel.findOneAndUpdate({ _id: userId }, req.body);
     res.send({ data });
     res.status(200);
     return 200;
@@ -114,7 +104,8 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   try {
-    const data = await usersModel.delete({ _id: req.params.id });
+    const userId = req.userId;
+    const data = await usersModel.delete({ _id: userId });
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_DELETE_USER", 500);
@@ -124,7 +115,6 @@ const deleteUser = async (req, res) => {
 module.exports = {
   registerController,
   loginController,
-  getUsers,
   getUser,
   getUserByEmail,
   deleteUser,

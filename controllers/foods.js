@@ -5,7 +5,8 @@ const getFoods = async (req, res) => {
   try {
     const user = req.user;
     const data = await foodModel.find({});
-    res.send({ data, user });
+
+    res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_FOODS", 500);
   }
@@ -17,7 +18,8 @@ const getFoodsByCategory = async (req, res) => {
     const data = await foodModel.find({
       category: req.params.categoryName,
     });
-    res.send({ data, user });
+
+    res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_CATEGORIES", 500);
   }

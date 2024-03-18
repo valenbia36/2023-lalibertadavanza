@@ -5,6 +5,7 @@ const {
   validateToken,
 } = require("../controllers/notifications");
 const { validatorSendEmail } = require("../validators/notifications");
+const extractUserIdMiddleware = require("../utils/handleUserID");
 
 router.post("/sendEmail", validatorSendEmail, sendResetPasswordEmail);
 router.get("/validateToken/:token", validateToken);

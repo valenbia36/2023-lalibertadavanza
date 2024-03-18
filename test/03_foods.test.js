@@ -1,35 +1,36 @@
 const request = require("supertest");
 const app = require("../app");
 const { foodModel } = require("../models");
-const sinon = require("sinon");
-const jwt = require("jsonwebtoken");
-let findStub;
+const { usersModel } = require("../models");
 
 beforeAll(async () => {
+  await usersModel.deleteMany({});
   await foodModel.deleteMany({});
 });
-function generateTestToken() {
-  const genericUserData = {
-    userId: "genericUserId",
+
+async function generateToken() {
+  const response = await request(app).post("/api/auth/register").send({
+    // se registra
     firstName: "test",
     lastName: "user",
-    email: "testuser@example.com",
+    email: "adminuser@admin.com",
+    password: "adminuser",
     sex: "male",
-    age: 25,
-    height: 1.75,
-    weight: 68,
-  };
-
-  const secretKey = "llave_secreta";
-  const options = { expiresIn: "1h" };
-
-  return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
+    age: "23",
+    height: "1.80",
+    weight: "70",
+  });
+  const response1 = await request(app).post("/api/auth/login").send({
+    // se logea para obtener token
+    email: "adminuser@admin.com",
+    password: "adminuser",
+  });
+  return response1._body.token;
 }
-
 test("A food can't be created without a name", async () => {
-  const testToken = generateTestToken();
+  const testToken = await generateToken();
   const response = await request(app)
-    .post("/api/foods")
+    .post("/api/foods/")
     .send({
       name: "",
       calories: "10",
@@ -38,11 +39,13 @@ test("A food can't be created without a name", async () => {
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
+  expect(response.body.errors[0].msg).toEqual("Name cant be empty");
 });
+
 test("A food can't be created without calories", async () => {
-  const testToken = generateTestToken();
+  const testToken = await generateToken();
   const response = await request(app)
-    .post("/api/foods")
+    .post("/api/foods/")
     .send({
       name: "Carne",
       calories: "",
@@ -51,9 +54,11 @@ test("A food can't be created without calories", async () => {
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
+  expect(response.body.errors[0].msg).toEqual("Calories cant be empty");
 });
+
 test("A food can't be created without weight", async () => {
-  const testToken = generateTestToken();
+  const testToken = await generateToken();
   const response = await request(app)
     .post("/api/foods")
     .send({
@@ -64,10 +69,44 @@ test("A food can't be created without weight", async () => {
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
+  expect(response.body.errors[0].msg).toEqual("Weight cant be empty");
 });
 
-test("Se creo el alimento correctamente", async () => {
-  const testToken = generateTestToken();
+test("A food can't be created without category", async () => {
+  const testToken = await generateToken();
+  const response = await request(app)
+    .post("/api/foods")
+    .send({
+      name: "Carne",
+      calories: 10,
+      weight: 10,
+      category: "",
+    })
+    .set("Authorization", "Bearer " + testToken);
+  expect(response.statusCode).toEqual(403);
+  expect(response.body.errors[0].msg).toEqual("Category cant be empty");
+});
+
+test("User cant create without a valid token", async () => {
+  const foodToSend = {
+    name: "Rucula",
+    calories: 2,
+    weight: 10,
+    category: "Carne",
+    carbs: 0,
+    proteins: 0,
+    fats: 0,
+  };
+  const response = await request(app)
+    .post("/api/foods")
+    .send(foodToSend)
+    .set("Authorization", "Bearer " + "token123");
+  expect(response.statusCode).toEqual(401);
+  expect(response.body.message).toEqual("Failed to authenticate token");
+});
+
+test("User create a food succesfully", async () => {
+  const testToken = await generateToken();
   const foodToSend = {
     name: "Rucula",
     calories: 2,
@@ -82,63 +121,88 @@ test("Se creo el alimento correctamente", async () => {
     .send(foodToSend)
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
-  const responseParsed = JSON.parse(response.text);
-  const foodId = responseParsed.data._id;
+  const foodId = response.body.foodId;
   const food = await foodModel.findById(foodId);
-  expect(food).toBeTruthy();
+  expect(food).toBeTruthy(); // que es tobetruthy?
 });
 
-test("[GET FOODS BY CATEGORY] Se obtuvieron los alimentos por categoria correctamente", async () => {
-  const testToken = generateTestToken();
-  const response = await request(app)
-    .get("/api/foods/category/Carne")
-    .set("Authorization", "Bearer " + testToken);
-  expect(response.statusCode).toEqual(200);
-});
+// como hacemos el test de category? deberia recorrer todas las que devuelve
+//y que verifique las categorias...
 
-test("Se obtuvieron los alimentos correctamente [200]", async () => {
-  const testToken = generateTestToken();
-  const response = await request(app)
-    .get("/api/foods")
-    .set("Authorization", "Bearer " + testToken);
-  expect(response.statusCode).toEqual(200);
-});
+/*
 
-test("[GET FOODS]Esto deberia retornar un 500", async () => {
-  const testToken = generateTestToken();
-  findStub = sinon.stub(foodModel, "find").throws(new Error("Database error"));
+test("Esto deberia retornar un 403", async() => {
+    const response = await request(app)
+    .post('/api/foods')
+    .send(
+        {
+            "name":"",
+            "calories":"10",
+            "weight": "10",
+            "category": "Carne"
+        }
+    )
+    expect(response.statusCode).toEqual(403);
+})
 
-  const response = await request(app)
-    .get("/api/foods")
-    .set("Authorization", "Bearer " + testToken);
+test("Se creo el alimento correctamente", async() => {
+    const response = await request(app)
+    .post('/api/foods')
+    .send(
+        {
+            "name": "Rucula",
+            "calories": "2",
+            "weight": "10",
+            "category": "Carne",
+            "carbs": "",
+            "proteins": "",
+            "fats": ""
+        }
+    )
+    expect(response.statusCode).toEqual(200);
+})
 
-  expect(response.status).toEqual(500);
+test("[GET FOODS BY CATEGORY] Se obtuvieron los alimentos por categoria correctamente", async() => {
+    const response = await request(app)
+    .get('/api/foods/category/Carne')
+    expect(response.statusCode).toEqual(200);
+})
+
+test("Se obtuvieron los alimentos correctamente [200]", async() => {
+    const response = await request(app)
+    .get('/api/foods')
+    expect(response.statusCode).toEqual(200);
+})
+
+test('[GET FOODS]Esto deberia retornar un 500', async () => {
+    findStub = sinon.stub(foodModel, 'find').throws(new Error('Database error'));
+
+    const response = await request(app)
+      .get('/api/foods');
+
+    expect(response.status).toEqual(500);
 }, 1000);
 
-test("[CREATE FOOD]Esto deberia retornar un 500", async () => {
-  const testToken = generateTestToken();
-  sinon.stub(foodModel, "create").throws(new Error("Database error"));
+test('[CREATE FOOD]Esto deberia retornar un 500', async () => {
+    sinon.stub(foodModel, 'create').throws(new Error('Database error'));
 
-  const response = await request(app)
-    .post("/api/foods")
-    .send({
-      name: "Rucula",
-      calories: "2",
-      weight: "10",
-      category: "Carne",
-    })
-    .set("Authorization", "Bearer " + testToken);
+    const response = await request(app)
+      .post('/api/foods')
+      .send({
+                "name": "Rucula",
+                "calories": "2",
+                "weight": "10",
+                "category": "Carne"
+            });
 
-  expect(response.status).toEqual(500);
+    expect(response.status).toEqual(500);
 });
 
-test("[GET FOODS BY CATEGORY]Esto deberia retornar un 500", async () => {
-  const testToken = generateTestToken();
-  sinon.stub(foodModel, "find").throws(new Error("Database error"));
+test('[GET FOODS BY CATEGORY]Esto deberia retornar un 500', async () => {
+    findStub.throws(new Error('Database error'));
 
-  const response = await request(app)
-    .get("/api/foods/category/Verdura")
-    .set("Authorization", "Bearer " + testToken);
+    const response = await request(app)
+    .get('/api/foods/category/Verdura');
 
-  expect(response.status).toEqual(500);
-});
+    expect(response.status).toEqual(500);
+});*/

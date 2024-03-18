@@ -22,9 +22,7 @@ const sendResetPasswordEmail = async (req, res) => {
 
     const resUpdateUser = {
       send: (data) => {},
-      status: (statusCode) => {
-        console.log(`Status Code: ${statusCode}`);
-      },
+      status: (statusCode) => {},
     };
 
     const updateUserSecretToken = await updateUser(
@@ -107,9 +105,7 @@ const sendRelationshipRequestEmail = async (req) => {
             `;
 
     await sendEmail(subject, message, send_to, sent_from, reply_to);
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const validateToken = async (req, res) => {

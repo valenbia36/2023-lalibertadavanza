@@ -21,9 +21,10 @@ function generateTestToken() {
   const secretKey = "llave_secreta";
   const options = { expiresIn: "1h" };
 
-  return jwt.sign(genericUserData, secretKey, options);
+  return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
 test("[SEND NOTIFICATION OK] Should send a reset password email successfully", async () => {
+  const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/notifications/sendEmail")
     .send({
@@ -31,7 +32,10 @@ test("[SEND NOTIFICATION OK] Should send a reset password email successfully", a
       token: "sampleToken",
       userName: "John Doe",
       url: "url",
-    });
+    })
+    .set("Authorization", "Bearer " + testToken);
+  const responseParsed = JSON.parse(response.text);
+  console.log(responseParsed);
 
   expect(response.statusCode).toEqual(200);
 });

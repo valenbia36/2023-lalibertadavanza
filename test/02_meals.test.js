@@ -200,8 +200,8 @@ test("Can't edit a meal from another user", async () => {
 
   const responseParsed = JSON.parse(response.text);
   const mealId = responseParsed.data._id;
-  const mealBeforeDelete = await mealModel.findById(mealId);
-  expect(mealBeforeDelete).toBeTruthy();
+  const mealBeforeEdit = await mealModel.findById(mealId);
+  expect(mealBeforeEdit).toBeTruthy();
 
   const response1 = await request(app)
     .put("/api/meals/" + mealId)

@@ -12,11 +12,7 @@ const registerController = async (req, res) => {
     const dataUser = await usersModel.create(body);
     dataUser.set("password", undefined, { strict: false });
 
-    const data = {
-      token: await tokenSign(dataUser),
-      user: dataUser,
-    };
-    res.send(data);
+    res.status(200).send({ message: "Usuario registrado exitosamente" });
   } catch (e) {
     handleHttpError(res, "ERROR_REGISTER_USER", 500);
   }
@@ -26,7 +22,7 @@ const loginController = async (req, res) => {
   try {
     const user = await usersModel
       .findOne({ email: req.body.email })
-      .select("firstName lastName email password role");
+      .select("firstName lastName email password");
     if (!user) {
       handleHttpError(res, "USER_NOT_EXISTS", 404);
       return;
@@ -41,6 +37,9 @@ const loginController = async (req, res) => {
 
     user.set("password", undefined, { strict: false });
 
+    const token = await tokenSign(user);
+
+    //res.status(200).send({ token });
     const data = {
       token: await tokenSign(user),
       user,
@@ -51,12 +50,15 @@ const loginController = async (req, res) => {
     handleHttpError(res, "ERROR_LOGIN_USER", 500);
   }
 };
-const logout = async (req, res) => {};
 
 const getUser = async (req, res) => {
   try {
     const userId = req.userId;
     const data = await usersModel.findById(userId);
+    if (!data) {
+      handleHttpError(res, "USER_NOT_EXISTS", 404);
+      return;
+    }
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_USER", 500);
@@ -82,8 +84,7 @@ const updateUserPassword = async (req, res) => {
       { _id: userId },
       { password: password }
     );
-    res.send({ data });
-    res.status(200);
+    res.status(200).send({ message: "PASSWORD_UPDATE_SUCCESFULL" });
   } catch (e) {
     handleHttpError(res, "ERROR_UPDATE_USER_PASSWORD", 500);
   }
@@ -93,9 +94,7 @@ const updateUser = async (req, res) => {
   try {
     const userId = req.userId;
     const data = await usersModel.findOneAndUpdate({ _id: userId }, req.body);
-    res.send({ data });
-    res.status(200);
-    return 200;
+    res.status(200).send({ message: "USER_UPDATE_SUCCESFULL" });
   } catch (e) {
     handleHttpError(res, "ERROR_UPDATE_USER", 500);
     return 500;
@@ -106,7 +105,7 @@ const deleteUser = async (req, res) => {
   try {
     const userId = req.userId;
     const data = await usersModel.delete({ _id: userId });
-    res.send({ data });
+    res.status(200).send({ message: "USER_DELETE_SUCCESFULL" });
   } catch (e) {
     handleHttpError(res, "ERROR_DELETE_USER", 500);
   }

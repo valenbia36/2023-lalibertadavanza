@@ -27,19 +27,26 @@ function generateTestToken() {
   return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
 
-test("Se creo el goal semanal correctamente", async () => {
+test("Create weekly goal successfully with valid data", async () => {
   const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/goals")
     .send({
-      name: "Meta 1",
-      startDate: "2024-10-22T03:00:15.454Z",
-      endDate: "2024-10-24T03:00:15.454Z",
+      name: "Goal 1",
+      startDate: "2024-03-18T03:00:15.454Z",
+      endDate: "2024-03-25T03:00:15.454Z",
       calories: 200,
-      recurrency: "monthly",
+      recurrency: "weekly",
     })
     .set("Authorization", "Bearer " + testToken);
+
+  // Assuming that a successful response should return 201 (Created) instead of 200 (OK)
   expect(response.statusCode).toEqual(200);
+
+  // Assuming that the response body contains the created goal data
+  expect(response.body).toHaveProperty("data");
+  expect(response.body.data).toHaveProperty("_id");
+  expect(response.body.data.name).toEqual("Goal 1");
 });
 
 test("Se creo el goal mensual correctamente", async () => {

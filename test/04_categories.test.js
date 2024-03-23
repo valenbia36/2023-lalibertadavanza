@@ -32,6 +32,7 @@ test("Category can't be created without a name and validator returns a 403", asy
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
+  expect(response.body.errors[0].msg).toEqual("Name cant be empty");
 });
 
 test("Category is succesfully created, stored in the DB and returns a 200", async () => {

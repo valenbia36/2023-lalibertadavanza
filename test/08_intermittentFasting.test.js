@@ -25,11 +25,14 @@ function generateTestToken() {
 }
 
 test("Se creo el intermittent fasting correctamente", async () => {
-  const response = await request(app).post("/api/intermittentFasting").send({
-    startDateTime: "2023-10-22T03:00:15.454Z",
-    endDateTime: "2023-10-23T05:00:15.454Z",
-    userId: "987654321",
-  });
+  const testToken = generateTestToken();
+  const response = await request(app)
+    .post("/api/intermittentFasting")
+    .send({
+      startDateTime: "2023-10-22T03:00:15.454Z",
+      endDateTime: "2023-10-23T05:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
 });
 

@@ -43,6 +43,7 @@ function generateTestToken2() {
 
   return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
+
 test("A meal cannot be created without name", async () => {
   const testToken = generateTestToken();
   const response = await request(app)
@@ -66,7 +67,8 @@ test("A meal cannot be created without name", async () => {
       calories: 200,
     })
     .set("Authorization", "Bearer " + testToken);
-  expect(response.statusCode).toEqual(500);
+  expect(response.statusCode).toEqual(403);
+  expect(response.body.errors[0].msg).toEqual("Name cant be empty");
 });
 
 test("Meal creation should succeed with valid data", async () => {
@@ -137,6 +139,8 @@ test("Deleting a meal successfully should result in a 200 status code and is not
   expect(response1.statusCode).toEqual(200);
   const mealAfterDelete = await mealModel.findById(mealId);
   expect(mealAfterDelete).toBeNull();
+  const responseParsed1 = JSON.parse(response1.text);
+  expect(responseParsed1.message).toEqual("Meal successfully deleted");
 });
 test("Can't delete a meal from another user", async () => {
   const testToken = generateTestToken();
@@ -172,6 +176,10 @@ test("Can't delete a meal from another user", async () => {
     .delete("/api/meals/" + mealId)
     .set("Authorization", "Bearer " + testToken2);
   expect(response1.statusCode).toEqual(403);
+  const responseParsed1 = JSON.parse(response1.text);
+  expect(responseParsed1.message).toEqual(
+    "You don't have permission to delete this meal"
+  );
 });
 test("Can't edit a meal from another user", async () => {
   const testToken = generateTestToken();
@@ -210,6 +218,8 @@ test("Can't edit a meal from another user", async () => {
     })
     .set("Authorization", "Bearer " + testToken2);
   expect(response1.statusCode).toEqual(404);
+  const responseParsed1 = JSON.parse(response1.text);
+  expect(responseParsed1.message).toEqual("Meal not found or unauthorized");
 });
 
 test("Updating a meal should return a 200 status code and it should be updated in the DB", async () => {

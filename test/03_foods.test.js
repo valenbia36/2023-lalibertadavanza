@@ -4,7 +4,6 @@ const { foodModel } = require("../models");
 const { usersModel } = require("../models");
 
 beforeAll(async () => {
-  await usersModel.deleteMany({});
   await foodModel.deleteMany({});
 });
 
@@ -124,10 +123,85 @@ test("User create a food succesfully", async () => {
   const foodId = response.body.foodId;
   const food = await foodModel.findById(foodId);
   expect(food).toBeTruthy(); // que es tobetruthy?
+  expect(food.name).toEqual("Rucula");
+});
+test("User create a foods and gets it successfully", async () => {
+  const testToken = await generateToken();
+  const foodToSend1 = {
+    name: "Lomo",
+    calories: 2,
+    weight: 10,
+    category: "Carne",
+    carbs: 0,
+    proteins: 0,
+    fats: 0,
+  };
+  const foodToSend2 = {
+    name: "Vacio",
+    calories: 2,
+    weight: 10,
+    category: "Carne",
+    carbs: 0,
+    proteins: 0,
+    fats: 0,
+  };
+  const response = await request(app)
+    .post("/api/foods")
+    .send(foodToSend1)
+    .set("Authorization", "Bearer " + testToken);
+  expect(response.statusCode).toEqual(200);
+  const response1 = await request(app)
+    .post("/api/foods")
+    .send(foodToSend2)
+    .set("Authorization", "Bearer " + testToken);
+  expect(response1.statusCode).toEqual(200);
+  const response3 = await request(app)
+    .get("/api/foods")
+    .set("Authorization", "Bearer " + testToken);
+  expect(response3.statusCode).toEqual(200);
+  expect(response3.body.data[0].name).toEqual("Lomo");
+  expect(response3.body.data[1].name).toEqual("Vacio");
 });
 
-// como hacemos el test de category? deberia recorrer todas las que devuelve
-//y que verifique las categorias...
+test("User create a food with cateogry 'Carne' and a food with cateogry 'Fruta', then filter with 'Carne' and all the data recieve are 'Carne'", async () => {
+  const testToken = await generateToken();
+  const foodToSend = {
+    name: "Lomo",
+    calories: 2,
+    weight: 10,
+    category: "Carne",
+    carbs: 0,
+    proteins: 0,
+    fats: 0,
+  };
+  const response = await request(app)
+    .post("/api/foods")
+    .send(foodToSend)
+    .set("Authorization", "Bearer " + testToken);
+  expect(response.statusCode).toEqual(200);
+  const foodToSend2 = {
+    name: "Manzana",
+    calories: 2,
+    weight: 10,
+    category: "Fruta",
+    carbs: 0,
+    proteins: 0,
+    fats: 0,
+  };
+  const response2 = await request(app)
+    .post("/api/foods")
+    .send(foodToSend2)
+    .set("Authorization", "Bearer " + testToken);
+  expect(response2.statusCode).toEqual(200);
+  const response3 = await request(app)
+    .get("/api/foods/category/Carne")
+    .set("Authorization", "Bearer " + testToken);
+  const data = response3.body.data;
+  // Chequea que todo lo que hay dentro de la respuesta del filtra tenga la cateogria Carne
+  data.forEach((item) => {
+    expect(item.category).toEqual("Carne");
+  });
+});
 
 /*
 

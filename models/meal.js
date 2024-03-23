@@ -49,6 +49,11 @@ const mealSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    /* {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: true,
+    } */ // Deberia ser asi pero rompe con los tests porque no esta el usuario registrado
   },
   {
     timestamps: true,

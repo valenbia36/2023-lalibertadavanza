@@ -5,6 +5,6 @@ const { validatorCreateCategory } = require("../validators/category");
 const { verifyToken } = require("../utils/handleJWT");
 
 router.get("/", verifyToken, getCategories);
-router.post("/", validatorCreateCategory, verifyToken, createCategory);
+router.post("/", verifyToken, validatorCreateCategory, createCategory);
 
 module.exports = router;

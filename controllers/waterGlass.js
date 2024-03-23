@@ -21,8 +21,11 @@ const createWaterGlass = async (req, res) => {
 const getWaterGlassByUserId = async (req, res) => {
   try {
     const userId = req.userId;
-    const data = await waterGlassModel.find({ userId: userId });
-
+    let data = await waterGlassModel.find({ userId: userId });
+    data = data.map((item) => {
+      const { userId, ...rest } = item.toObject();
+      return rest;
+    });
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_WATER_GLASS_BY_USER_ID", 500);

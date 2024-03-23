@@ -64,14 +64,12 @@ const createMeal = async (req, res) => {
   try {
     // Accede al userId desde req.body
     const userId = req.userId;
-
     // Agrega el userId a los datos de la comida antes de crearla
     const mealData = { ...req.body, userId };
     const data = await mealModel.create(mealData);
 
     // Eliminar el userId de la respuesta
     const { userId: removedUserId, ...responseData } = data.toObject();
-
     //res.status(200).end();
     res.send({ data: responseData });
   } catch (e) {
@@ -117,7 +115,7 @@ const deleteMealById = async (req, res) => {
     if (!mealToDelete || mealToDelete.userId !== userId) {
       return res
         .status(403)
-        .json({ message: "No tienes permiso para borrar esta meal." });
+        .json({ message: "You don't have permission to delete this meal" });
     }
 
     // Borrar la meal si todo está bien
@@ -125,7 +123,7 @@ const deleteMealById = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Meal borrada exitosamente", data: deletedMeal });
+      .json({ message: "Meal successfully deleted", data: deletedMeal });
   } catch (e) {
     handleHttpError(res, "ERROR_DELETE_MEAL", 500);
   }

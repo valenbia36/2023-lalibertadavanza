@@ -1,6 +1,7 @@
 const models = {
   usersModel: require("./users"),
   foodModel: require("./food"),
+  mealModel2: require("./meal2"),
   mealModel: require("./meal"),
   categoryModel: require("./category"),
   goalModel: require("./goal"),

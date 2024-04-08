@@ -12,6 +12,40 @@ const jwt = require("jsonwebtoken");
   }
 }; */
 
+function calculateNutritionalInformation(meal) {
+  let totalCalories = 0;
+  let totalFats = 0;
+  let totalCarbs = 0;
+  let totalProteins = 0;
+  meal.foods.forEach((food) => {
+    let caloriesPerFood = Math.round(
+      food.weightConsumed * (food.foodId.calories / food.foodId.weight)
+    );
+    let fatsPerFood = Math.round(
+      food.weightConsumed * (food.foodId.fats / food.foodId.weight)
+    );
+    let carbsPerFood = Math.round(
+      food.weightConsumed * (food.foodId.carbs / food.foodId.weight)
+    );
+    let proteinsPerFood = Math.round(
+      food.weightConsumed * (food.foodId.proteins / food.foodId.weight)
+    );
+    food.caloriesPerFood = caloriesPerFood;
+    food.fatsPerFood = fatsPerFood;
+    food.carbsPerFood = carbsPerFood;
+    food.proteinsPerFood = proteinsPerFood;
+    totalCalories += caloriesPerFood;
+    totalFats += fatsPerFood;
+    totalCarbs += carbsPerFood;
+    totalProteins = +proteinsPerFood;
+  });
+  meal.totalCalories = totalCalories;
+  meal.totalFats = totalFats;
+  meal.totalCarbs = totalCarbs;
+  meal.totalProteins = totalProteins;
+  return meal;
+}
+
 const getMealsByUserId = async (req, res) => {
   try {
     const userId = req.userId;
@@ -24,8 +58,11 @@ const getMealsByUserId = async (req, res) => {
 
     // Convertir el resultado en un objeto JavaScript utilizando toJSON()
     const meals = data.map((meal) => meal.toJSON());
+    const mealsToSend = meals.map((meal) =>
+      calculateNutritionalInformation(meal)
+    );
 
-    res.send({ data: meals });
+    res.send({ data: mealsToSend });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }

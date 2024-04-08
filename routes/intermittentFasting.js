@@ -16,13 +16,13 @@ router.post(
   createIntermittentFasting
 );
 router.get(
-  "/:userId",
+  "/",
   verifyToken,
   extractUserIdMiddleware,
   getIntermittentFastingByUserId
 );
 router.get(
-  "/active/:userId",
+  "/active/",
   verifyToken,
   extractUserIdMiddleware,
   getActiveIntermittentFastingByUserId

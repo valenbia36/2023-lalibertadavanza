@@ -43,9 +43,9 @@ async function createFoods(token) {
     calories: 2,
     weight: 10,
     category: "Carne",
-    carbs: 0,
-    proteins: 0,
-    fats: 0,
+    carbs: 10,
+    proteins: 10,
+    fats: 10,
   };
   const response = await request(app)
     .post("/api/foods")
@@ -57,8 +57,8 @@ async function createFoods(token) {
     .set("Authorization", "Bearer " + token);
   //console.log(response1._body);
   let foods = [
-    { foodId: response._body.data._id, weightConsumed: 2 },
-    { foodId: response1._body.data._id, weightConsumed: 3 },
+    { foodId: response._body.data._id, weightConsumed: 100 },
+    { foodId: response1._body.data._id, weightConsumed: 200 },
   ];
   return foods;
 }
@@ -81,5 +81,5 @@ test("A meal cannot be created without name", async () => {
     .get("/api/meals2/user")
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
-  console.log(response1._body.data[0].foods);
+  //console.log(response1._body.data);
 });

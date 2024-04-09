@@ -20,7 +20,13 @@ router.get(
   extractUserIdMiddleware,
   getMealsByUserIdAndDate
 );
-router.post("/", verifyToken, extractUserIdMiddleware, createMeal);
+router.post(
+  "/",
+  verifyToken,
+  validatorCreateMeal,
+  extractUserIdMiddleware,
+  createMeal
+);
 router.put("/:id", verifyToken, extractUserIdMiddleware, updateMealById);
 router.delete("/:id", verifyToken, extractUserIdMiddleware, deleteMealById);
 router.get(
@@ -32,7 +38,6 @@ router.get(
 router.get(
   "/user/startDate/:startDate/endDate/:endDate",
   verifyToken,
-
   extractUserIdMiddleware,
   getCaloriesBetweenDays
 );

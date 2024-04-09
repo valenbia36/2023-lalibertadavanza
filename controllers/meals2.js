@@ -51,6 +51,7 @@ const getMealsByUserId = async (req, res) => {
     const userId = req.userId;
     const data = await mealModel2
       .find({ userId: userId })
+      .select("-userId")
       .populate({
         path: "foods.foodId",
       })
@@ -80,15 +81,19 @@ const getMealsByUserIdAndDate = async (req, res) => {
       },
     };
 
-    let data = await mealModel.find(filter);
+    let data = await mealModel2
+      .find(filter)
+      .select("-userId")
+      .populate({
+        path: "foods.foodId",
+      })
+      .exec();
+    const meals = data.map((meal) => meal.toJSON());
+    const mealsToSend = meals.map((meal) =>
+      calculateNutritionalInformation(meal)
+    );
 
-    // Remove userId from each object in the data array
-    data = data.map((item) => {
-      const { userId, ...rest } = item.toObject();
-      return rest;
-    });
-
-    res.send({ data });
+    res.send({ mealsToSend });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }
@@ -117,13 +122,13 @@ const updateMealById = async (req, res) => {
     const mealId = req.params.id;
 
     // Primero, verificamos si la comida pertenece al usuario actual
-    const meal = await mealModel.findOne({ _id: mealId, userId: userId });
+    const meal = await mealModel2.findOne({ _id: mealId, userId: userId });
     if (!meal) {
       return handleHttpError(res, "Meal not found or unauthorized", 404);
     }
 
     // Si la comida pertenece al usuario, procedemos a actualizarla
-    const updatedMeal = await mealModel.findOneAndUpdate(
+    const updatedMeal = await mealModel2.findOneAndUpdate(
       { _id: mealId },
       req.body
     );
@@ -141,19 +146,17 @@ const deleteMealById = async (req, res) => {
   try {
     // Obtener el userId de la solicitud
     const userId = req.userId;
-
     // Obtener la meal por el _id
-    const mealToDelete = await mealModel.findOne({ _id: req.params.id });
-
+    const mealToDelete = await mealModel2.findOne({ _id: req.params.id });
     // Verificar si la meal existe y si el userId coincide
-    if (!mealToDelete || mealToDelete.userId !== userId) {
+    if (!mealToDelete || mealToDelete.userId.toString() !== userId) {
       return res
         .status(403)
         .json({ message: "You don't have permission to delete this meal" });
     }
 
     // Borrar la meal si todo está bien
-    const deletedMeal = await mealModel.deleteOne({ _id: req.params.id });
+    const deletedMeal = await mealModel2.deleteOne({ _id: req.params.id });
 
     res
       .status(200)
@@ -180,17 +183,24 @@ const getCaloriesByDays = async (req, res) => {
     while (fechaActual < fechaFin) {
       fechasIntermedias.push({
         date: fechaActual.toISOString(),
-        calories: 0,
+        totalCalories: 0,
       });
 
       fechaActual.setDate(fechaActual.getDate() + 1);
     }
 
-    const meals = await mealModel.find(filter);
+    const meals = await mealModel2
+      .find(filter)
+      .select("-userId")
+      .populate({
+        path: "foods.foodId",
+      })
+      .exec();
     const dataOfMeals = {};
     meals.forEach((item) => {
       const date = item.date.toISOString().split("T")[0];
-      const calories = item.calories;
+      const meal = calculateNutritionalInformation(item);
+      const calories = meal.totalCalories;
 
       if (dataOfMeals[date]) {
         dataOfMeals[date] += calories;
@@ -211,7 +221,7 @@ const getCaloriesByDays = async (req, res) => {
         (item) => obtenerFechaSinHora(item.date) === fechaSinHora
       );
       if (index !== -1) {
-        fechasIntermedias[index].calories = calories;
+        fechasIntermedias[index].totalCalories = calories;
       }
     }
     res.send({ fechasIntermedias });
@@ -231,11 +241,20 @@ const getCaloriesBetweenDays = async (req, res) => {
       date: { $gte: startDate, $lte: endDate },
     };
 
-    const result = await mealModel.find(filter);
-
+    const result = await mealModel2
+      .find(filter)
+      .select("-userId")
+      .populate({
+        path: "foods.foodId",
+      })
+      .exec();
+    const meals = result.map((meal) => meal.toJSON());
+    const mealsToSend = meals.map((meal) =>
+      calculateNutritionalInformation(meal)
+    );
     let totalCalorias = 0;
-    result.forEach((record) => {
-      totalCalorias += record.calories;
+    mealsToSend.forEach((record) => {
+      totalCalorias += record.totalCalories;
     });
 
     res.send({ totalCalorias });

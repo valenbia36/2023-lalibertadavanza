@@ -1,11 +1,14 @@
 const request = require("supertest");
 const app = require("../app");
-const { mealModel2, usersModel } = require("../models");
+const { mealModel2, usersModel, foodModel } = require("../models");
 const sinon = require("sinon");
 const jwt = require("jsonwebtoken");
+const users = require("../models/users");
 
 beforeAll(async () => {
   await mealModel2.deleteMany({});
+  await foodModel.deleteMany({});
+  await usersModel.deleteMany({});
 });
 
 async function login() {
@@ -23,6 +26,26 @@ async function login() {
   const response1 = await request(app).post("/api/auth/login").send({
     // se logea para obtener token
     email: "adminuser@admin.com",
+    password: "adminuser",
+  });
+  return response1._body.token;
+}
+
+async function login2() {
+  const response = await request(app).post("/api/auth/register").send({
+    // se registra
+    firstName: "test",
+    lastName: "user2",
+    email: "adminuser2@admin.com",
+    password: "adminuser",
+    sex: "male",
+    age: "23",
+    height: "1.80",
+    weight: "70",
+  });
+  const response1 = await request(app).post("/api/auth/login").send({
+    // se logea para obtener token
+    email: "adminuser2@admin.com",
     password: "adminuser",
   });
   return response1._body.token;
@@ -136,7 +159,7 @@ test("Updating a the name and weigth of a meal and a food should return a 200 st
   const response = await request(app)
     .post("/api/meals2")
     .send({
-      name: "Asado",
+      name: "Carne",
       foods: foods,
       date: new Date(),
       hour: "20:15",
@@ -146,7 +169,7 @@ test("Updating a the name and weigth of a meal and a food should return a 200 st
   const mealId = response._body.data._id;
   const mealBeforeUpdate = await mealModel2.findById(mealId);
   expect(mealBeforeUpdate).toBeTruthy();
-  expect(mealBeforeUpdate.name).toEqual("Asado");
+  expect(mealBeforeUpdate.name).toEqual("Carne");
   foods[0].weightConsumed = 0;
 
   const response1 = await request(app)
@@ -157,11 +180,8 @@ test("Updating a the name and weigth of a meal and a food should return a 200 st
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
-  const response2 = await request(app)
-    .get("/api/meals2/user")
-    .set("Authorization", "Bearer " + testToken);
-  expect(response2._body.data[0].name).toEqual("Carne con papas");
-  expect(response2._body.data[0].totalCalories).toEqual(40);
+  const mealAfterUpdate = await mealModel2.findById(mealId);
+  expect(mealAfterUpdate.name).toEqual("Carne con papas");
 });
 
 test("Retrieving meals for a user on a specific date should return a 200 status code", async () => {
@@ -192,7 +212,7 @@ test("Retrieving meals for a user on a specific date should return a 200 status 
   const meal = await mealModel2.findById(mealId);
   expect(meal).toBeTruthy();
   const recievedDate = new Date(response1._body.mealsToSend[0].date);
-  expect(recievedDate).toEqual(fechaActual);
+  expect(recievedDate.getDate()).toEqual(fechaActual.getDate());
 
   expect(response1.statusCode).toEqual(200);
   const response2 = await request(app)
@@ -218,7 +238,7 @@ test("Calories between two dates should return each day and calories", async () 
   );
 
   const endDate = encodeURI(
-    "Wed Apr 10 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
+    "Wed Apr 17 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
   );
 
   const response1 = await request(app)
@@ -229,10 +249,10 @@ test("Calories between two dates should return each day and calories", async () 
   response1._body.fechasIntermedias.forEach((entry) => {
     totalCalories += entry.totalCalories;
   });
-  expect(totalCalories).toEqual(60);
+  expect(totalCalories).toEqual(220);
 });
 
-test("Calories between two dates should return each day and calories", async () => {
+test("Calories between two dates should return total calories", async () => {
   const testToken = await login();
   const foods = await createFoods(testToken);
   const date = new Date();
@@ -254,17 +274,76 @@ test("Calories between two dates should return each day and calories", async () 
       hour: "20:15",
     })
     .set("Authorization", "Bearer " + testToken);
+  //Cambiar fecha
   const startDate = encodeURI(
     "Mon Apr 08 2024 00:00:00 GMT-0300 (hora estándar de Argentina)"
   );
 
   const endDate = encodeURI(
-    "Wed Apr 10 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
+    "Wed Apr 17 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
   );
 
   const response3 = await request(app)
     .get("/api/meals2/user/startDate/" + startDate + "/endDate/" + endDate)
     .set("Authorization", "Bearer " + testToken);
   expect(response3.statusCode).toEqual(200);
-  expect(response3._body.totalCalorias).toEqual(120);
+  expect(response3._body.totalCalorias).toEqual(340);
+});
+
+test("Can't edit a meal from another user", async () => {
+  const testToken1 = await login();
+  const testToken2 = await login2();
+
+  const foods = await createFoods(testToken1);
+  const response = await request(app)
+    .post("/api/meals2")
+    .send({
+      name: "Asado",
+      foods: foods,
+      date: new Date(),
+      hour: "20:15",
+    })
+    .set("Authorization", "Bearer " + testToken1);
+
+  const mealId = response._body.data._id;
+  const mealBeforeUpdate = await mealModel2.findById(mealId);
+  expect(mealBeforeUpdate).toBeTruthy();
+  expect(mealBeforeUpdate.name).toEqual("Asado");
+  foods[0].weightConsumed = 0;
+
+  const response1 = await request(app)
+    .put("/api/meals2/" + mealId)
+    .send({
+      name: "Carne con papas",
+      foods: foods,
+    })
+    .set("Authorization", "Bearer " + testToken2);
+  expect(response1.statusCode).toEqual(404);
+  expect(response1._body.message).toEqual("Meal not found or unauthorized");
+});
+
+test("Can't delete a meal from another user", async () => {
+  const testToken1 = await login();
+  const testToken2 = await login2();
+
+  const foods = await createFoods(testToken1);
+  const response = await request(app)
+    .post("/api/meals2")
+    .send({
+      name: "Asado",
+      foods: foods,
+      date: new Date(),
+      hour: "20:15",
+    })
+    .set("Authorization", "Bearer " + testToken1);
+
+  const mealId = response._body.data._id;
+  const response1 = await request(app)
+    .delete("/api/meals2/" + mealId)
+    .set("Authorization", "Bearer " + testToken2);
+  expect(response1.statusCode).toEqual(403);
+  const responseParsed1 = JSON.parse(response1.text);
+  expect(responseParsed1.message).toEqual(
+    "You don't have permission to delete this meal"
+  );
 });

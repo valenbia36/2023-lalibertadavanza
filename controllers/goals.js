@@ -1,6 +1,39 @@
 const { ObjectId } = require("mongodb");
-const { goalModel, mealModel } = require("../models");
+const { goalModel, mealModel2 } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
+function calculateNutritionalInformation(meal) {
+  let totalCalories = 0;
+  let totalFats = 0;
+  let totalCarbs = 0;
+  let totalProteins = 0;
+  meal.foods.forEach((food) => {
+    let caloriesPerFood = Math.round(
+      food.weightConsumed * (food.foodId.calories / food.foodId.weight)
+    );
+    let fatsPerFood = Math.round(
+      food.weightConsumed * (food.foodId.fats / food.foodId.weight)
+    );
+    let carbsPerFood = Math.round(
+      food.weightConsumed * (food.foodId.carbs / food.foodId.weight)
+    );
+    let proteinsPerFood = Math.round(
+      food.weightConsumed * (food.foodId.proteins / food.foodId.weight)
+    );
+    food.caloriesPerFood = caloriesPerFood;
+    food.fatsPerFood = fatsPerFood;
+    food.carbsPerFood = carbsPerFood;
+    food.proteinsPerFood = proteinsPerFood;
+    totalCalories += caloriesPerFood;
+    totalFats += fatsPerFood;
+    totalCarbs += carbsPerFood;
+    totalProteins = +proteinsPerFood;
+  });
+  meal.totalCalories = totalCalories;
+  meal.totalFats = totalFats;
+  meal.totalCarbs = totalCarbs;
+  meal.totalProteins = totalProteins;
+  return meal;
+}
 
 const getGoalsByUserId = async (req, res) => {
   try {
@@ -9,15 +42,11 @@ const getGoalsByUserId = async (req, res) => {
       return handleHttpError(res, "User ID not provided", 400);
     }
 
-    const data = await goalModel.find({ userId: userId });
+    const data = await goalModel
+      .find({ userId: userId })
+      .select("-userId -_id");
 
-    // Eliminar el userId de cada objeto en el array data
-    const responseData = data.map((item) => {
-      const { userId, ...rest } = item.toObject();
-      return rest;
-    });
-
-    res.send({ data: responseData });
+    res.send({ data: data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_GOALS_BY_USER_ID", 500);
   }
@@ -29,7 +58,9 @@ const getActiveGoalsByUserId = async (req, res) => {
     if (!userId) {
       return handleHttpError(res, "User ID not provided", 400);
     }
-    const data = await goalModel.find({ userId: userId });
+    const data = await goalModel
+      .find({ userId: userId })
+      .select("-userId -_id");
     const filteredData = data.filter(
       (item) => new Date() >= item.startDate && new Date() <= item.endDate
     );
@@ -96,10 +127,18 @@ const getGoalsByUserWithProgress = async (req, res) => {
           date: { $gte: startDate, $lte: endDate },
         };
 
-        const result = await mealModel.find(filter);
+        const result = await mealModel2
+          .find(filter)
+          .select("-userId")
+          .populate({
+            path: "foods.foodId",
+          })
+          .exec();
         let totalCalorias = 0;
-        result.forEach((record) => {
-          totalCalorias += record.calories;
+        const meals = result.map((meal) => meal.toJSON());
+        meals.forEach((meal) => {
+          let mealUpdated = calculateNutritionalInformation(meal);
+          totalCalorias += mealUpdated.totalCalories;
         });
 
         const state = await calculateGoalStatus(item);
@@ -109,10 +148,10 @@ const getGoalsByUserWithProgress = async (req, res) => {
           totalCalorias: totalCalorias,
           state: state,
         };
-
         return newItem;
       })
     );
+    //Sacar userId de la res
     res.send({ goalsWithProgress });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_GOALS_BY_USER_ID", 500);
@@ -142,7 +181,13 @@ const updateGoal = async (req, res) => {
     if (!goal) {
       return handleHttpError(res, "Goal not found or unauthorized", 404);
     }
-
+    if (calculateGoalStatus(goal) != "Not started") {
+      return handleHttpError(
+        res,
+        "Can't edit a goal that has started or it's expired",
+        500
+      );
+    }
     // Si el objetivo pertenece al usuario, procedemos a actualizarlo
     const updatedGoal = await goalModel.findOneAndUpdate(
       { _id: goalId },

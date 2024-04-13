@@ -35,21 +35,18 @@ const getWaterGlassByUserId = async (req, res) => {
 const getWaterGlassForUserIdByDay = async (req, res) => {
   try {
     const userId = req.userId;
-    const result = await waterGlassModel.aggregate([
-      {
-        $match: { userId },
-      },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $sort: { _id: 1 },
-      },
-    ]);
-    res.send({ result });
+    const results = await waterGlassModel.find({ userId });
+    const groupedResults = {};
+    // Iteramos sobre los resultados y contamos las ocurrencias de cada fecha
+    results.forEach((result) => {
+      const date = result.date.toISOString().split("T")[0]; // Obtenemos la fecha en formato "YYYY-MM-DD"
+
+      if (!groupedResults[date]) {
+        groupedResults[date] = 0;
+      }
+      groupedResults[date]++;
+    });
+    res.send({ groupedResults });
   } catch (e) {
     handleHttpError(
       res,

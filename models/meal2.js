@@ -17,6 +17,8 @@ const mealSchema = new mongoose.Schema(
           },
           weightConsumed: {
             type: Number,
+            min: [0],
+            default: 0,
             required: true,
           },
         },

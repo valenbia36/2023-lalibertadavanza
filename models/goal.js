@@ -8,18 +8,36 @@ const goalSchema = new mongoose.Schema(
     },
     calories: {
       type: Number,
+      min: [0],
     },
     userId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: true,
     },
     startDate: {
       type: Date,
     },
     endDate: {
       type: Date,
+      validate: {
+        validator: function (value) {
+          return this.startDate <= value;
+        },
+        message: (props) =>
+          `La fecha de fin debe ser mayor o igual a la fecha de inicio.`,
+      },
     },
     recurrency: {
       type: String,
+      enum: ["Monthly", "Weekly", "Non-Recurring"],
+      validate: {
+        validator: function (option) {
+          return ["Monthly", "Weekly", "Non-Recurring"].includes(option);
+        },
+        message: "Invalid option for recurrency",
+      },
+      required: true,
     },
   },
   {

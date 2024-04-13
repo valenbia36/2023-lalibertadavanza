@@ -271,4 +271,5 @@ module.exports = {
   deleteMealById,
   getCaloriesBetweenDays,
   getCaloriesByDays,
+  calculateNutritionalInformation,
 };

@@ -165,7 +165,8 @@ const createGoal = async (req, res) => {
       return handleHttpError(res, "User ID not provided", 400);
     }
     const data = await goalModel.create({ ...req.body, userId: userId });
-    res.send({ data });
+    const { userId: removedUserId, ...responseData } = data.toObject();
+    res.send({ data: responseData });
   } catch (e) {
     handleHttpError(res, "ERROR_CREATE_GOAL", 500);
   }
@@ -181,7 +182,8 @@ const updateGoal = async (req, res) => {
     if (!goal) {
       return handleHttpError(res, "Goal not found or unauthorized", 404);
     }
-    if (calculateGoalStatus(goal) != "Not started") {
+    const status = await calculateGoalStatus(goal);
+    if (status != "Not started") {
       return handleHttpError(
         res,
         "Can't edit a goal that has started or it's expired",

@@ -5,10 +5,12 @@ const goalSchema = new mongoose.Schema(
   {
     name: {
       type: String,
+      required: true,
     },
     calories: {
       type: Number,
       min: [0],
+      required: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -17,9 +19,11 @@ const goalSchema = new mongoose.Schema(
     },
     startDate: {
       type: Date,
+      required: true,
     },
     endDate: {
       type: Date,
+      required: true,
       validate: {
         validator: function (value) {
           return this.startDate <= value;

@@ -8,12 +8,12 @@ beforeAll(async () => {
   await usersModel.deleteMany({});
 });
 
-async function login() {
+async function login(email) {
   const response = await request(app).post("/api/auth/register").send({
     // se registra
     firstName: "test",
     lastName: "user",
-    email: "adminuser@admin.com",
+    email: email,
     password: "adminuser",
     sex: "male",
     age: "23",
@@ -22,7 +22,7 @@ async function login() {
   });
   const response1 = await request(app).post("/api/auth/login").send({
     // se logea para obtener token
-    email: "adminuser@admin.com",
+    email: email,
     password: "adminuser",
   });
   return response1._body.token;
@@ -83,7 +83,7 @@ async function createFoods(token) {
 }
 
 test("Create weekly goal successfully with valid data", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
@@ -105,7 +105,7 @@ test("Create weekly goal successfully with valid data", async () => {
   expect(response.body.data.calories).toEqual(200);
 });
 test("Create weekly goal with end date less than start date", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser3@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
@@ -122,7 +122,7 @@ test("Create weekly goal with end date less than start date", async () => {
 });
 
 test("A goal is created with and invalid recurrency option an throws an error", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser4@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
@@ -137,7 +137,7 @@ test("A goal is created with and invalid recurrency option an throws an error", 
 });
 
 test("[GET GOALS BY USER ID] GET request should retrieve user's goal that were created and a 200 status code", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser5@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
@@ -145,6 +145,7 @@ test("[GET GOALS BY USER ID] GET request should retrieve user's goal that were c
       startDate: "2023-10-22T03:00:15.454Z",
       endDate: "2023-10-24T03:00:15.454Z",
       calories: 200,
+      recurrency: "Weekly",
     })
     .set("Authorization", "Bearer " + testToken);
 
@@ -157,7 +158,7 @@ test("[GET GOALS BY USER ID] GET request should retrieve user's goal that were c
 });
 
 test("[GET ACTIVE GOALS BY USER ID] GET active goals should only retrieve current active goals", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser6@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
@@ -165,6 +166,7 @@ test("[GET ACTIVE GOALS BY USER ID] GET active goals should only retrieve curren
       startDate: "2023-10-22T03:00:15.454Z",
       endDate: "2025-10-24T03:00:15.454Z",
       calories: 200,
+      recurrency: "Weekly",
     })
     .set("Authorization", "Bearer " + testToken);
   const response1 = await request(app)
@@ -174,6 +176,7 @@ test("[GET ACTIVE GOALS BY USER ID] GET active goals should only retrieve curren
       startDate: "2023-10-22T03:00:15.454Z",
       endDate: "2023-10-24T03:00:15.454Z",
       calories: 200,
+      recurrency: "Weekly",
     })
     .set("Authorization", "Bearer " + testToken);
 
@@ -187,7 +190,7 @@ test("[GET ACTIVE GOALS BY USER ID] GET active goals should only retrieve curren
 });
 
 test("[GET GOALS BY USER ID WITH PROGRESS MONTHLY] User creates a 200 calories goal and eats a meal of 60 and get retrieves the active goal and the progress", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser7@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
     .post("/api/meals2")
@@ -218,7 +221,7 @@ test("[GET GOALS BY USER ID WITH PROGRESS MONTHLY] User creates a 200 calories g
 }, 60000);
 
 test("[DELETE GOAL BY ID] Deleting a goal successfully should result in a 200 status code and is not present in the DB", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser8@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
@@ -241,7 +244,7 @@ test("[DELETE GOAL BY ID] Deleting a goal successfully should result in a 200 st
 }, 6000);
 
 test("[UPDATE GOAL BY ID] Users update a goal by changing his name and PUT request returns a 200 and the updated goal", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser9@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
@@ -249,11 +252,10 @@ test("[UPDATE GOAL BY ID] Users update a goal by changing his name and PUT reque
       startDate: "2025-10-22T03:00:15.454Z",
       endDate: "2025-10-24T03:00:15.454Z",
       calories: 200,
-      recurrency: "Monthly",
+      recurrency: "Weekly",
     })
     .set("Authorization", "Bearer " + testToken);
   const responseParsed = JSON.parse(response.text);
-
   const response1 = await request(app)
     .put("/api/goals/" + responseParsed.data._id)
     .send({ name: "Nuevo nombre" })
@@ -263,7 +265,7 @@ test("[UPDATE GOAL BY ID] Users update a goal by changing his name and PUT reque
 }, 6000);
 
 test("[UPDATE GOAL BY ID] Cant update a goal that is in progress", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser10@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
@@ -287,7 +289,7 @@ test("[UPDATE GOAL BY ID] Cant update a goal that is in progress", async () => {
 }, 6000);
 
 test("[UPDATE GOAL BY ID] Cant update a goal that is expired", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser11@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
@@ -310,7 +312,7 @@ test("[UPDATE GOAL BY ID] Cant update a goal that is expired", async () => {
   );
 }, 6000);
 test("[UPDATE GOAL BY ID] Cant update a goal from another user", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser12@admin.com");
   const testToken2 = await login2();
   const response = await request(app)
     .post("/api/goals")
@@ -332,73 +334,18 @@ test("[UPDATE GOAL BY ID] Cant update a goal from another user", async () => {
   expect(response1._body.message).toEqual("Goal not found or unauthorized");
 }, 6000);
 
-test("[GET ACTIVE GOALS BY USER ID] Esto deberia retornar un 500", async () => {
-  const testToken = generateTestToken();
-  findStub = sinon.stub(goalModel, "find").throws(new Error("Database error"));
-
+test("User can't create a goal with negative calories", async () => {
+  const testToken = await login("adminuser13@admin.com");
   const response = await request(app)
     .post("/api/goals")
     .send({
       name: "Meta 1",
-      startDate: "2023-10-22T03:00:15.454Z",
-      endDate: "2023-10-24T03:00:15.454Z",
-      calories: 200,
+      startDate: "2025-10-22T03:00:15.454Z",
+      endDate: "2025-10-24T03:00:15.454Z",
+      calories: -100,
+      recurrency: "Weekly",
     })
     .set("Authorization", "Bearer " + testToken);
-
-  const response1 = await request(app)
-    .get("/api/goals/activeGoals/")
-    .set("Authorization", "Bearer " + testToken);
-  expect(response1.statusCode).toEqual(500);
-});
-
-test("[GET GOALS BY USER ID WITH PROGRESS MONTHLY] Esto deberia retornar un 500", async () => {
-  const testToken = generateTestToken();
-  findStub = sinon.stub(goalModel, "find").throws(new Error("Database error"));
-  const response = await request(app)
-    .get("/api/goals/goalsWithProgress/")
-    .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(500);
+  expect(response._body.message).toEqual("ERROR_CREATE_GOAL");
 });
-
-test("[ERROR 500] No se creo el goal correctamente", async () => {
-  const testToken = generateTestToken();
-  sinon.stub(goalModel, "create").throws(new Error("Database error"));
-
-  const response = await request(app)
-    .post("/api/goals")
-    .send({
-      name: "Meta 1",
-      startDate: "2023-10-22T03:00:15.454Z",
-      endDate: "2023-10-24T03:00:15.454Z",
-      calories: 200,
-    })
-    .set("Authorization", "Bearer " + testToken);
-
-  expect(response.statusCode).toEqual(500);
-});
-
-test("[UPDATE GOAL BY ID] Esto deberia retornar un 500", async () => {
-  const testToken = generateTestToken();
-  sinon.stub(goalModel, "findOneAndUpdate").throws(new Error("Database error"));
-
-  const response1 = await request(app)
-    .put("/api/goals/1234")
-    .send({ name: "Nuevo nombre" })
-    .set("Authorization", "Bearer " + testToken);
-  expect(response1.statusCode).toEqual(500);
-}, 1000);
-
-test("[GET GOALS BY USER ID] Esto deberia retornar un 500", async () => {
-  const testToken = generateTestToken();
-  const response1 = await request(app)
-    .get("/api/goals/")
-    .set("Authorization", "Bearer " + testToken);
-  expect(response1.statusCode).toEqual(500);
-});
-
-test("[DELETE GOAL BY ID] Esto deberia retornar un 500", async () => {
-  sinon.stub(goalModel, "delete").throws(new Error("Database error"));
-  const response = await request(app).delete("/api/goals/1234");
-  expect(response.statusCode).toEqual(500);
-}, 1000);

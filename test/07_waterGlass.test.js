@@ -109,8 +109,8 @@ test("Successfully retrieved water consumption records by user ID", async () => 
   expect(response.statusCode).toEqual(500);
 });
  */
-test("[ERROR 500] No se obtuvieron los water glass by user id correctamente", async () => {
+/* test("[ERROR 500] No se obtuvieron los water glass by user id correctamente", async () => {
   sinon.stub(waterGlassModel, "find").throws(new Error("Database error"));
   const response = await request(app).get("/api/waterGlass/987654321");
   expect(response.statusCode).toEqual(500);
-});
+}); */

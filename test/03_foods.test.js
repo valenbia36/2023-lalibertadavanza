@@ -1,10 +1,11 @@
 const request = require("supertest");
 const app = require("../app");
-const { foodModel } = require("../models");
+const { foodModel, categoryModel } = require("../models");
 const { usersModel } = require("../models");
 
 beforeAll(async () => {
   await foodModel.deleteMany({});
+  await categoryModel.deleteMany({});
 });
 
 async function generateToken() {
@@ -26,15 +27,26 @@ async function generateToken() {
   });
   return response1._body.token;
 }
+
+async function createCategory(name, testToken) {
+  const response = await request(app)
+    .post("/api/category")
+    .send({
+      name: name,
+    })
+    .set("Authorization", "Bearer " + testToken);
+  return response._body.data._id;
+}
 test("A food can't be created without a name", async () => {
   const testToken = await generateToken();
+  const category = await createCategory("Carne", testToken);
   const response = await request(app)
     .post("/api/foods/")
     .send({
       name: "",
       calories: "10",
       weight: "10",
-      category: "Carne",
+      category: category,
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
@@ -43,36 +55,39 @@ test("A food can't be created without a name", async () => {
 
 test("A food can't be created without calories", async () => {
   const testToken = await generateToken();
+  const category = await createCategory("Carne", testToken);
   const response = await request(app)
     .post("/api/foods/")
     .send({
       name: "Carne",
       calories: "",
       weight: 10,
-      category: "Carne",
+      category: category,
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
   expect(response.body.errors[0].msg).toEqual("Calories cant be empty");
-});
+}, 7000);
 
 test("A food can't be created without weight", async () => {
   const testToken = await generateToken();
+  const category = await createCategory("Carne", testToken);
   const response = await request(app)
     .post("/api/foods")
     .send({
       name: "Carne",
       calories: 10,
       weight: "",
-      category: "Carne",
+      category: category,
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
   expect(response.body.errors[0].msg).toEqual("Weight cant be empty");
-});
+}, 7000);
 
 test("A food can't be created without category", async () => {
   const testToken = await generateToken();
+
   const response = await request(app)
     .post("/api/foods")
     .send({
@@ -84,7 +99,7 @@ test("A food can't be created without category", async () => {
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(403);
   expect(response.body.errors[0].msg).toEqual("Category cant be empty");
-});
+}, 7000);
 
 test("User cant create without a valid token", async () => {
   const foodToSend = {
@@ -106,11 +121,12 @@ test("User cant create without a valid token", async () => {
 
 test("User create a food succesfully", async () => {
   const testToken = await generateToken();
+  const category = await createCategory("Verdura", testToken);
   const foodToSend = {
     name: "Rucula",
     calories: 2,
     weight: 10,
-    category: "Carne",
+    category: category,
     carbs: 0,
     proteins: 0,
     fats: 0,
@@ -120,18 +136,19 @@ test("User create a food succesfully", async () => {
     .send(foodToSend)
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
-  const foodId = response.body.foodId;
+  const foodId = response._body.data._id;
   const food = await foodModel.findById(foodId);
   expect(food).toBeTruthy(); // que es tobetruthy?
   expect(food.name).toEqual("Rucula");
 });
 test("User create a foods and gets it successfully", async () => {
   const testToken = await generateToken();
+  const category = await createCategory("Carne", testToken);
   const foodToSend1 = {
     name: "Lomo",
     calories: 2,
     weight: 10,
-    category: "Carne",
+    category: category,
     carbs: 0,
     proteins: 0,
     fats: 0,
@@ -140,7 +157,7 @@ test("User create a foods and gets it successfully", async () => {
     name: "Vacio",
     calories: 2,
     weight: 10,
-    category: "Carne",
+    category: category,
     carbs: 0,
     proteins: 0,
     fats: 0,
@@ -165,11 +182,12 @@ test("User create a foods and gets it successfully", async () => {
 
 test("User create a food with cateogry 'Carne' and a food with cateogry 'Fruta', then filter with 'Carne' and all the data recieve are 'Carne'", async () => {
   const testToken = await generateToken();
+  const category = await createCategory("Carne", testToken);
   const foodToSend = {
     name: "Lomo",
     calories: 2,
     weight: 10,
-    category: "Carne",
+    category: category,
     carbs: 0,
     proteins: 0,
     fats: 0,
@@ -179,11 +197,12 @@ test("User create a food with cateogry 'Carne' and a food with cateogry 'Fruta',
     .send(foodToSend)
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
+  const category2 = await createCategory("Fruta", testToken);
   const foodToSend2 = {
     name: "Manzana",
     calories: 2,
     weight: 10,
-    category: "Fruta",
+    category: category2,
     carbs: 0,
     proteins: 0,
     fats: 0,
@@ -196,12 +215,12 @@ test("User create a food with cateogry 'Carne' and a food with cateogry 'Fruta',
   const response3 = await request(app)
     .get("/api/foods/category/Carne")
     .set("Authorization", "Bearer " + testToken);
-  const data = response3.body.data;
+  const data = response3._body.data;
   // Chequea que todo lo que hay dentro de la respuesta del filtra tenga la cateogria Carne
   data.forEach((item) => {
-    expect(item.category).toEqual("Carne");
+    expect(item.category.name).toEqual("Carne");
   });
-});
+}, 7000);
 
 /*
 

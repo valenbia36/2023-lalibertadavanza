@@ -10,6 +10,7 @@ const waterGlassSchema = new mongoose.Schema(
     },
     date: {
       type: Date,
+      required: true,
     },
   },
   {

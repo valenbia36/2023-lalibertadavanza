@@ -178,6 +178,8 @@ test("User create a foods and gets it successfully", async () => {
   expect(response3.statusCode).toEqual(200);
   expect(response3.body.data[0].name).toEqual("Lomo");
   expect(response3.body.data[1].name).toEqual("Vacio");
+  expect(response3.body.data[0].category.name).toEqual("Carne");
+  expect(response3.body.data[1].category.name).toEqual("Carne");
 });
 
 test("User create a food with cateogry 'Carne' and a food with cateogry 'Fruta', then filter with 'Carne' and all the data recieve are 'Carne'", async () => {

@@ -1,17 +1,15 @@
 const request = require("supertest");
 const app = require("../app");
 const { waterGlassModel } = require("../models");
-const sinon = require("sinon");
-const jwt = require("jsonwebtoken");
 beforeAll(async () => {
   await waterGlassModel.deleteMany({});
 });
-async function login() {
+async function login(email) {
   const response = await request(app).post("/api/auth/register").send({
     // se registra
     firstName: "test",
     lastName: "user",
-    email: "adminuser@admin.com",
+    email: email,
     password: "adminuser",
     sex: "male",
     age: "23",
@@ -20,13 +18,14 @@ async function login() {
   });
   const response1 = await request(app).post("/api/auth/login").send({
     // se logea para obtener token
-    email: "adminuser@admin.com",
+    email: email,
     password: "adminuser",
   });
   return response1._body.token;
 }
+
 test("Creating a water glass record should store it in the database", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser@admin.com");
   const response = await request(app)
     .post("/api/waterGlass")
     .send({
@@ -35,13 +34,12 @@ test("Creating a water glass record should store it in the database", async () =
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
   const waterGlassId = response.body.data._id;
-
   const createdWaterGlass = await waterGlassModel.findById(waterGlassId);
   expect(createdWaterGlass).toBeDefined();
 });
 
-test("Se obtuvieron los water glass for user id by day correctamente", async () => {
-  const testToken = await login();
+test("Se obtuvieron los water glass for user id by day correctamente. ", async () => {
+  const testToken = await login("adminuser1@admin.com");
   const response = await request(app)
     .post("/api/waterGlass")
     .send({
@@ -70,11 +68,11 @@ test("Se obtuvieron los water glass for user id by day correctamente", async () 
 });
 
 test("Successfully retrieved water consumption records by user ID", async () => {
-  const testToken = generateTestToken();
+  const testToken = await login("adminuser3@admin.com");
   const createWaterGlassResponse = await request(app)
     .post("/api/waterGlass")
     .send({
-      startDate: "2023-10-22T03:00:15.454Z",
+      date: "2024-04-10T03:00:15.454Z",
     })
     .set("Authorization", "Bearer " + testToken);
   expect(createWaterGlassResponse.statusCode).toEqual(200);

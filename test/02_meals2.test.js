@@ -1,6 +1,11 @@
 const request = require("supertest");
 const app = require("../app");
-const { mealModel2, usersModel, foodModel } = require("../models");
+const {
+  mealModel2,
+  usersModel,
+  foodModel,
+  categoryModel,
+} = require("../models");
 const sinon = require("sinon");
 const jwt = require("jsonwebtoken");
 const users = require("../models/users");
@@ -9,14 +14,15 @@ beforeAll(async () => {
   await mealModel2.deleteMany({});
   await foodModel.deleteMany({});
   await usersModel.deleteMany({});
+  await categoryModel.deleteMany({});
 });
 
-async function login() {
+async function login(email) {
   const response = await request(app).post("/api/auth/register").send({
     // se registra
     firstName: "test",
     lastName: "user",
-    email: "adminuser@admin.com",
+    email: email,
     password: "adminuser",
     sex: "male",
     age: "23",
@@ -25,7 +31,7 @@ async function login() {
   });
   const response1 = await request(app).post("/api/auth/login").send({
     // se logea para obtener token
-    email: "adminuser@admin.com",
+    email: email,
     password: "adminuser",
   });
   return response1._body.token;
@@ -50,13 +56,23 @@ async function login2() {
   });
   return response1._body.token;
 }
+async function createCategory(name, testToken) {
+  const response = await request(app)
+    .post("/api/category")
+    .send({
+      name: name,
+    })
+    .set("Authorization", "Bearer " + testToken);
+  return response._body.data._id;
+}
 
 async function createFoods(token) {
+  const category = await createCategory("Carne", token);
   const foodToSend1 = {
     name: "Lomo",
     calories: 2,
     weight: 10,
-    category: "Carne",
+    category: category,
     carbs: 0,
     proteins: 0,
     fats: 0,
@@ -65,7 +81,7 @@ async function createFoods(token) {
     name: "Vacio",
     calories: 2,
     weight: 10,
-    category: "Carne",
+    category: category,
     carbs: 10,
     proteins: 10,
     fats: 10,
@@ -87,7 +103,7 @@ async function createFoods(token) {
 }
 
 test("POST request for a user should return a 200 and should be retrieved with a GET request", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
     .post("/api/meals2")
@@ -111,7 +127,7 @@ test("POST request for a user should return a 200 and should be retrieved with a
 });
 
 test("A meal cannot be created without name", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser1@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
     .post("/api/meals2")
@@ -127,7 +143,7 @@ test("A meal cannot be created without name", async () => {
 });
 
 test("Deleting a meal successfully should result in a 200 status code and is not present in the DB", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser3@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
     .post("/api/meals2")
@@ -154,7 +170,7 @@ test("Deleting a meal successfully should result in a 200 status code and is not
 }, 6000);
 
 test("Updating a the name and weigth of a meal and a food should return a 200 status code and name should change and its total calories", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser4@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
     .post("/api/meals2")
@@ -185,13 +201,14 @@ test("Updating a the name and weigth of a meal and a food should return a 200 st
 });
 
 test("Retrieving meals for a user on a specific date should return a 200 status code", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser5@admin.com");
+  const foods = await createFoods(testToken);
   const fechaActual = new Date();
   // Obtener el año, mes y día
   const año = fechaActual.getFullYear();
   const mes = (fechaActual.getMonth() + 1).toString().padStart(2, "0"); // Los meses son indexados desde 0
   const dia = fechaActual.getDate().toString().padStart(2, "0");
-  const foods = await createFoods(testToken);
+
   const response = await request(app)
     .post("/api/meals2")
     .send({
@@ -213,6 +230,9 @@ test("Retrieving meals for a user on a specific date should return a 200 status 
   expect(meal).toBeTruthy();
   const recievedDate = new Date(response1._body.mealsToSend[0].date);
   expect(recievedDate.getDate()).toEqual(fechaActual.getDate());
+  expect(response1._body.mealsToSend[0].foods[0].foodId.category.name).toEqual(
+    "Carne"
+  );
 
   expect(response1.statusCode).toEqual(200);
   const response2 = await request(app)
@@ -222,7 +242,7 @@ test("Retrieving meals for a user on a specific date should return a 200 status 
 });
 
 test("Calories between two dates should return each day and calories", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser6@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
     .post("/api/meals2")
@@ -234,17 +254,18 @@ test("Calories between two dates should return each day and calories", async () 
     })
     .set("Authorization", "Bearer " + testToken);
   const startDate = encodeURI(
-    "Mon Apr 08 2024 00:00:00 GMT-0300 (hora estándar de Argentina)"
+    "Mon Apr 16 2024 00:00:00 GMT-0300 (hora estándar de Argentina)"
   );
 
   const endDate = encodeURI(
-    "Wed Apr 17 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
+    "Wed Apr 18 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
   );
 
   const response1 = await request(app)
     .get("/api/meals2/user/between/" + startDate + "/" + endDate)
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
+
   let totalCalories = 0;
   response1._body.fechasIntermedias.forEach((entry) => {
     totalCalories += entry.totalCalories;
@@ -253,7 +274,7 @@ test("Calories between two dates should return each day and calories", async () 
 });
 
 test("Calories between two dates should return total calories", async () => {
-  const testToken = await login();
+  const testToken = await login("adminuser7@admin.com");
   const foods = await createFoods(testToken);
   const date = new Date();
   const response = await request(app)
@@ -280,7 +301,7 @@ test("Calories between two dates should return total calories", async () => {
   );
 
   const endDate = encodeURI(
-    "Wed Apr 17 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
+    "Mon Aug 5 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
   );
 
   const response3 = await request(app)
@@ -291,7 +312,7 @@ test("Calories between two dates should return total calories", async () => {
 });
 
 test("Can't edit a meal from another user", async () => {
-  const testToken1 = await login();
+  const testToken1 = await login("adminuser8@admin.com");
   const testToken2 = await login2();
 
   const foods = await createFoods(testToken1);
@@ -323,7 +344,7 @@ test("Can't edit a meal from another user", async () => {
 });
 
 test("Can't delete a meal from another user", async () => {
-  const testToken1 = await login();
+  const testToken1 = await login("adminuser9@admin.com");
   const testToken2 = await login2();
 
   const foods = await createFoods(testToken1);

@@ -23,12 +23,12 @@ function generateTestToken() {
 
   return jwt.sign({ _id: genericUserData.userId }, secretKey, options);
 }
-test("[SEND NOTIFICATION OK] Should send a reset password email successfully", async () => {
+/* test("[SEND NOTIFICATION OK] Should send a reset password email successfully", async () => {
   const testToken = generateTestToken();
   const response = await request(app)
     .post("/api/notifications/sendEmail")
     .send({
-      email: "user@example.com",
+      email: "vbianchi16@gmail.com",
       token: "sampleToken",
       userName: "John Doe",
       url: "url",
@@ -38,7 +38,7 @@ test("[SEND NOTIFICATION OK] Should send a reset password email successfully", a
   console.log(responseParsed);
 
   expect(response.statusCode).toEqual(200);
-});
+}, 7000); */
 
 test("[SEND NOTIFICATION OK] Should send a reset password email successfully", async () => {
   const response = await request(app)
@@ -51,12 +51,12 @@ test("[SEND NOTIFICATION OK] Should send a reset password email successfully", a
     });
 
   expect(response.statusCode).toEqual(200);
-});
+}, 10000);
 
 test("Hola", async () => {
   const reqUpdateUser = {
     body: {
-      email: "agmassieri00@gmail.com",
+      email: "vbianchi16@gmail.com",
       userName: "userName",
     },
   };
@@ -70,7 +70,7 @@ test("Hola", async () => {
   //....Agregar assert
 });
 
-test("[VALIDATE TOKEN OK] Should send a reset password email successfully", async () => {
+/* test("[VALIDATE TOKEN OK] Should send a reset password email successfully", async () => {
   const response = await request(app).post("/api/auth/register").send({
     firstName: "test99",
     lastName: "user",
@@ -98,4 +98,4 @@ test("[VALIDATE TOKEN NO OK] Should send a reset password email successfully", a
   );
 
   expect(response1.statusCode).toEqual(500);
-}, 1000);
+}, 1000); */

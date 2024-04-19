@@ -86,13 +86,15 @@ const getMealsByUserIdAndDate = async (req, res) => {
       .select("-userId")
       .populate({
         path: "foods.foodId",
+        populate: {
+          path: "category",
+        },
       })
       .exec();
     const meals = data.map((meal) => meal.toJSON());
     const mealsToSend = meals.map((meal) =>
       calculateNutritionalInformation(meal)
     );
-
     res.send({ mealsToSend });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);

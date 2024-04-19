@@ -4,7 +4,9 @@ const mongooseDelete = require("mongoose-delete");
 const intermittentFastingSchema = new mongoose.Schema(
   {
     userId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: true,
     },
     startDateTime: {
       type: Date,
@@ -13,6 +15,13 @@ const intermittentFastingSchema = new mongoose.Schema(
     endDateTime: {
       type: Date,
       required: true,
+      validate: {
+        validator: function (value) {
+          return this.startDateTime <= value;
+        },
+        message: (props) =>
+          `La fecha de fin debe ser mayor o igual a la fecha de inicio.`,
+      },
     },
   },
   {

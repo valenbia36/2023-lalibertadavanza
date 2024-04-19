@@ -4,7 +4,7 @@ const { handleHttpError } = require("../utils/handleErrors");
 const getFoods = async (req, res) => {
   try {
     const user = req.user;
-    const data = await foodModel.find({});
+    const data = await foodModel.find({}).populate({ path: "category" }).exec();
 
     res.send({ data });
   } catch (e) {

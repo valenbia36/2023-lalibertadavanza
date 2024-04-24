@@ -44,8 +44,9 @@ test("[SEND NOTIFICATION OK] Should send a reset password email successfully", a
   const response = await request(app)
     .post("/api/notifications/sendEmail")
     .send({
-      email: "user@example.com",
+      email: "vbianchi16@gmail.com",
       token: "sampleToken",
+      userId: "a7s6745f",
       userName: "John Doe",
       url: "url",
     });

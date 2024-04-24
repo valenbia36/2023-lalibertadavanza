@@ -51,23 +51,39 @@ test("[ERROR 501] Ya existe un ayuno intermitente en ese horario", async () => {
   expect(response.statusCode).toEqual(501);
 });
 
-test("Se obtuvieron los intermittent fastings activos correctamente", async () => {
+test("Should retrieve active intermittent fastings correctly", async () => {
   const testToken = await login("adminuser@admin.com");
-  const response = await request(app)
+
+  // Create a new intermittent fasting
+  const createResponse = await request(app)
     .post("/api/intermittentFasting")
     .send({
       startDateTime: "2023-10-22T03:00:15.454Z",
       endDateTime: "2024-10-23T05:00:15.454Z",
     })
     .set("Authorization", "Bearer " + testToken);
-  expect(response.statusCode).toEqual(200);
-  const response2 = await request(app)
+  expect(createResponse.statusCode).toEqual(200);
+
+  // Retrieve active intermittent fastings
+  const activeResponse = await request(app)
     .get("/api/intermittentFasting/active")
     .set("Authorization", "Bearer " + testToken);
-  expect(response2.statusCode).toEqual(200);
-  //Terminar de verificar que este activo y verificar que no traiga actives
-  //expect(response2._body.filteredData[0].startDateTime)
-  console.log(response2._body);
+  expect(activeResponse.statusCode).toEqual(200);
+
+  // Ensure that there is at least one active intermittent fasting
+  expect(activeResponse.body.filteredData.length).toBeGreaterThan(0);
+
+  // Get the first active intermittent fasting
+  const activeFasting = activeResponse.body.filteredData[0];
+
+  // Convert dates to timestamps
+  const currentDateTime = new Date().getTime();
+  const startDateTime = new Date(activeFasting.startDateTime).getTime();
+  const endDateTime = new Date(activeFasting.endDateTime).getTime();
+
+  // Verify that the intermittent fasting has started but has not yet ended
+  expect(startDateTime).toBeLessThanOrEqual(currentDateTime);
+  expect(endDateTime).toBeGreaterThan(currentDateTime);
 });
 
 test("User deletes active intermitent fasting", async () => {
@@ -81,7 +97,6 @@ test("User deletes active intermitent fasting", async () => {
     .set("Authorization", "Bearer " + testToken);
 
   const responseParsed = JSON.parse(response.text);
-  //console.log(responseParsed);
 
   const response1 = await request(app)
     .delete("/api/intermittentFasting/active/" + responseParsed.data._id)
@@ -113,7 +128,47 @@ test("[ERROR 500] No se elimino el intermittent fasting correctamente", async ()
   expect(response1.statusCode).toEqual(500);
 });
 // Falta no poder crear dos que se superpongan
+test("Cant create two intermitent fastings on the same time span", async () => {
+  const testToken = await login("adminuser@admin.com");
+
+  // Create a new intermittent fasting
+  const createResponse1 = await request(app)
+    .post("/api/intermittentFasting")
+    .send({
+      startDateTime: "2023-10-22T03:00:15.454Z",
+      endDateTime: "2024-10-23T05:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
+  expect(createResponse1.statusCode).toEqual(200);
+
+  // Create a new intermittent fasting
+  const createResponse2 = await request(app)
+    .post("/api/intermittentFasting")
+    .send({
+      startDateTime: "2023-10-22T04:00:15.454Z",
+      endDateTime: "2024-10-23T05:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
+  expect(createResponse2.statusCode).toEqual(501);
+  expect(createResponse2._body.message).toEqual("CONFLICTING_FASTING_PERIOD");
+});
 // QUe no puedas crear endDate < startDate
+test("Cant create an intermitent fasting with start date older than end date", async () => {
+  const testToken = await login("adminuser@admin.com");
+
+  // Create a new intermittent fasting
+  const createResponse1 = await request(app)
+    .post("/api/intermittentFasting")
+    .send({
+      startDateTime: "2024-10-24T03:00:15.454Z",
+      endDateTime: "2024-10-23T05:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
+  expect(createResponse1.statusCode).toEqual(500);
+  expect(createResponse1._body.message).toEqual(
+    "ERROR_CREATE_INTERMITTENT_FASTING"
+  );
+});
 test("[ERROR 500] No se creo el intermittent fasting correctamente", async () => {
   sinon
     .stub(intermittentFastingModel, "create")

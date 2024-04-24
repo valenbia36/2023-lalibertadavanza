@@ -9,6 +9,7 @@ const sendResetPasswordEmail = async (req, res) => {
   const userName = req.body.userName;
   const userId = req.body.userId;
   const url = req.body.url;
+  console.log(email + " " + token + " " + userId);
 
   try {
     const reqUpdateUser = {

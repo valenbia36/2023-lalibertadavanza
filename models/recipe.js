@@ -41,7 +41,19 @@ const recipeSchema = new mongoose.Schema(
     },
     foods: {
       type: [
-        { type: mongoose.Schema.Types.Mixed, ref: "food", required: true },
+        {
+          foodId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "foods",
+            required: true,
+          },
+          weightConsumed: {
+            type: Number,
+            min: [0],
+            default: 0,
+            required: true,
+          },
+        },
       ],
       required: true,
       validate: {

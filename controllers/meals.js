@@ -1,4 +1,4 @@
-const { mealModel2, foodModel } = require("../models");
+const { mealModel, foodModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
 const jwt = require("jsonwebtoken");
 
@@ -49,7 +49,7 @@ function calculateNutritionalInformation(meal) {
 const getMealsByUserId = async (req, res) => {
   try {
     const userId = req.userId;
-    const data = await mealModel2
+    const data = await mealModel
       .find({ userId: userId })
       .select("-userId")
       .populate({
@@ -81,7 +81,7 @@ const getMealsByUserIdAndDate = async (req, res) => {
       },
     };
 
-    let data = await mealModel2
+    let data = await mealModel
       .find(filter)
       .select("-userId")
       .populate({
@@ -107,7 +107,7 @@ const createMeal = async (req, res) => {
     const userId = req.userId;
     // Agrega el userId a los datos de la comida antes de crearla
     const mealData = { ...req.body, userId };
-    const data = await mealModel2.create(mealData);
+    const data = await mealModel.create(mealData);
     // Eliminar el userId de la respuesta
     const { userId: removedUserId, ...responseData } = data.toObject();
     //res.status(200).end();
@@ -124,13 +124,13 @@ const updateMealById = async (req, res) => {
     const mealId = req.params.id;
 
     // Primero, verificamos si la comida pertenece al usuario actual
-    const meal = await mealModel2.findOne({ _id: mealId, userId: userId });
+    const meal = await mealModel.findOne({ _id: mealId, userId: userId });
     if (!meal) {
       return handleHttpError(res, "Meal not found or unauthorized", 404);
     }
 
     // Si la comida pertenece al usuario, procedemos a actualizarla
-    const updatedMeal = await mealModel2.findOneAndUpdate(
+    const updatedMeal = await mealModel.findOneAndUpdate(
       { _id: mealId },
       req.body
     );
@@ -149,7 +149,7 @@ const deleteMealById = async (req, res) => {
     // Obtener el userId de la solicitud
     const userId = req.userId;
     // Obtener la meal por el _id
-    const mealToDelete = await mealModel2.findOne({ _id: req.params.id });
+    const mealToDelete = await mealModel.findOne({ _id: req.params.id });
     // Verificar si la meal existe y si el userId coincide
     if (!mealToDelete || mealToDelete.userId.toString() !== userId) {
       return res
@@ -158,7 +158,7 @@ const deleteMealById = async (req, res) => {
     }
 
     // Borrar la meal si todo está bien
-    const deletedMeal = await mealModel2.deleteOne({ _id: req.params.id });
+    const deletedMeal = await mealModel.deleteOne({ _id: req.params.id });
 
     res
       .status(200)
@@ -191,7 +191,7 @@ const getCaloriesByDays = async (req, res) => {
       fechaActual.setDate(fechaActual.getDate() + 1);
     }
 
-    const meals = await mealModel2
+    const meals = await mealModel
       .find(filter)
       .select("-userId")
       .populate({
@@ -243,7 +243,8 @@ const getCaloriesBetweenDays = async (req, res) => {
       date: { $gte: startDate, $lte: endDate },
     };
 
-    const result = await mealModel2
+    const result = await mealModel
+
       .find(filter)
       .select("-userId")
       .populate({

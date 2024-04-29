@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { goalModel, mealModel2 } = require("../models");
+const { goalModel, mealModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
 function calculateNutritionalInformation(meal) {
   let totalCalories = 0;
@@ -127,7 +127,7 @@ const getGoalsByUserWithProgress = async (req, res) => {
           date: { $gte: startDate, $lte: endDate },
         };
 
-        const result = await mealModel2
+        const result = await mealModel
           .find(filter)
           .select("-userId")
           .populate({

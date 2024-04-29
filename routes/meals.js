@@ -9,7 +9,7 @@ const {
   deleteMealById,
   getCaloriesBetweenDays,
   getCaloriesByDays,
-} = require("../controllers/meals2");
+} = require("../controllers/meals");
 const { validatorCreateMeal } = require("../validators/meals");
 const extractUserIdMiddleware = require("../utils/handleUserID");
 

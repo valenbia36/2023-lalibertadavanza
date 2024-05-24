@@ -6,7 +6,6 @@ const createRecipe = async (req, res) => {
   try {
     const creator = req.userId;
     const recipe = { ...req.body, creator };
-    console.log(recipe);
     const data = await recipeModel.create(recipe);
 
     res.send({ data });
@@ -17,7 +16,12 @@ const createRecipe = async (req, res) => {
 };
 const getRecipes = async (req, res) => {
   try {
-    const data = await recipeModel.find({});
+    const data = await recipeModel
+      .find({})
+      .populate({
+        path: "foods.foodId",
+      })
+      .exec();
 
     res.send({ data });
   } catch (e) {
@@ -65,7 +69,7 @@ const addRateToRecipe = async (req, res) => {
 };
 const updateRecipeById = async (req, res) => {
   try {
-    if (req.user._id != req.body.creator) {
+    if (req.userId != req.body.creator) {
       return handleHttpError(res, "UNAUTHORIZED", 403);
     }
     const data = await recipeModel.findOneAndUpdate(

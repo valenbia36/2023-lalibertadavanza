@@ -6,6 +6,7 @@ const createRecipe = async (req, res) => {
   try {
     const creator = req.userId;
     const recipe = { ...req.body, creator };
+    console.log(recipe);
     const data = await recipeModel.create(recipe);
 
     res.send({ data });
@@ -43,7 +44,6 @@ const getRecipe = async (req, res) => {
 
 const addRateToRecipe = async (req, res) => {
   try {
-    console.log(req.body.rate);
     const data = await recipeModel.findById(req.body.id);
     if (!data) {
       return handleHttpError(res, "ERROR_RECIPE_NOT_FOUND", 404);
@@ -58,7 +58,7 @@ const addRateToRecipe = async (req, res) => {
       data.ratings = [];
     } */
     // Agregar la calificacion junto con el ID del usuario
-    data.ratings.push({ rate: req.body.rate, userId: req.body.userId });
+    data.ratings.push({ rate: req.body.rate, userId: req.userId });
 
     await data.save();
 

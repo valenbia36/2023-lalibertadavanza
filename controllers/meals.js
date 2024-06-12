@@ -49,6 +49,10 @@ function calculateNutritionalInformation(meal) {
 const getMealsByUserId = async (req, res) => {
   try {
     const userId = req.userId;
+
+    // Añadir un log para verificar userId
+    console.log(`Fetching meals for userId: ${userId}`);
+
     const data = await mealModel
       .find({ userId: userId })
       .select("-userId")
@@ -57,7 +61,12 @@ const getMealsByUserId = async (req, res) => {
       })
       .exec();
 
-    // Convertir el resultado en un objeto JavaScript utilizando toJSON()
+    // Añadir un log para verificar los datos obtenidos
+    //console.log("Meals found:", data);
+    data.forEach((meal) => {
+      console.log(meal);
+    });
+
     const meals = data.map((meal) => meal.toJSON());
     const mealsToSend = meals.map((meal) =>
       calculateNutritionalInformation(meal)
@@ -65,6 +74,8 @@ const getMealsByUserId = async (req, res) => {
 
     res.send({ data: mealsToSend });
   } catch (e) {
+    // Añadir un log para verificar el error capturado
+    console.error("Error fetching meals:", e);
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }
 };

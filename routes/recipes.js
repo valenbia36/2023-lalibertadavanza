@@ -13,7 +13,7 @@ const extractUserIdMiddleware = require("../utils/handleUserID");
 router.get("/", verifyToken, getRecipes);
 router.get("/recipes/:id", verifyToken, getRecipe);
 router.post("/", verifyToken, extractUserIdMiddleware, createRecipe);
-router.put("/rate/:id", verifyToken, addRateToRecipe);
+router.put("/rate/:id", verifyToken, extractUserIdMiddleware, addRateToRecipe);
 router.put("/:id", verifyToken, updateRecipeById);
 
 module.exports = router;

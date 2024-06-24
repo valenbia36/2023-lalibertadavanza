@@ -23,7 +23,6 @@ const getRecipes = async (req, res) => {
         path: "foods.foodId",
       })
       .exec();
-
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_RECIPES", 500);
@@ -72,6 +71,7 @@ const updateRecipeById = async (req, res) => {
     if (req.userId != req.body.creator) {
       return handleHttpError(res, "UNAUTHORIZED", 403);
     }
+
     const data = await recipeModel.findOneAndUpdate(
       { _id: req.params.id },
       req.body

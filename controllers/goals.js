@@ -183,7 +183,7 @@ const updateGoal = async (req, res) => {
       return handleHttpError(res, "Goal not found or unauthorized", 404);
     }
     const status = await calculateGoalStatus(goal);
-    if (status != "Not started") {
+    if (status == "Expired") {
       return handleHttpError(
         res,
         "Can't edit a goal that has started or it's expired",

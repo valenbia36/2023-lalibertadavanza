@@ -3,7 +3,7 @@ const { weekModel } = require("../models");
 
 const getWeek = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.userId;
     const weeks = await weekModel
       .find({ userId: userId })
       .populate({
@@ -17,7 +17,6 @@ const getWeek = async (req, res) => {
 
     res.status(200).json(weeksWithLastUpdate);
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -25,18 +24,18 @@ const getWeek = async (req, res) => {
 const saveWeek = async (req, res) => {
   try {
     const updatedPlan = req.body;
-
+    const userId = req.userId;
     /* if (!updatedPlan.userId) {
       return res
         .status(400)
         .json({ success: false, error: "El userId es obligatorio." });
     } */
-    if (req.user._id != updatedPlan.userId) {
+    if (req.user._id != userId) {
       return handleHttpError(res, "UNAUTHORIZED", 403);
     }
 
     const result = await weekModel.findOneAndUpdate(
-      { userId: updatedPlan.userId },
+      { userId: userId },
       updatedPlan,
       {
         new: true,

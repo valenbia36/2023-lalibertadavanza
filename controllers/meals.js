@@ -50,9 +50,6 @@ const getMealsByUserId = async (req, res) => {
   try {
     const userId = req.userId;
 
-    // Añadir un log para verificar userId
-    console.log(`Fetching meals for userId: ${userId}`);
-
     const data = await mealModel
       .find({ userId: userId })
       .select("-userId")
@@ -61,11 +58,9 @@ const getMealsByUserId = async (req, res) => {
       })
       .exec();
 
-    // Añadir un log para verificar los datos obtenidos
-    //console.log("Meals found:", data);
-    data.forEach((meal) => {
+    /*   data.forEach((meal) => {
       console.log(meal);
-    });
+    }); */
 
     const meals = data.map((meal) => meal.toJSON());
     const mealsToSend = meals.map((meal) =>
@@ -74,8 +69,6 @@ const getMealsByUserId = async (req, res) => {
 
     res.send({ data: mealsToSend });
   } catch (e) {
-    // Añadir un log para verificar el error capturado
-    console.error("Error fetching meals:", e);
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }
 };
@@ -124,7 +117,6 @@ const createMeal = async (req, res) => {
     //res.status(200).end();
     res.send({ data: responseData });
   } catch (e) {
-    console.log(e);
     handleHttpError(res, "ERROR_CREATE_MEALS", 500);
   }
 };

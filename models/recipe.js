@@ -80,7 +80,7 @@ const recipeSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Agrega campos de createdAt y updatedAt automáticamente
+    timestamps: true,
     versionKey: false,
   }
 );

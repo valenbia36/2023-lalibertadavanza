@@ -1,7 +1,7 @@
 const request = require("supertest");
 const app = require("../app");
 const {
-  mealModel2,
+  mealModel,
   usersModel,
   foodModel,
   categoryModel,
@@ -11,7 +11,7 @@ const jwt = require("jsonwebtoken");
 const users = require("../models/users");
 
 beforeAll(async () => {
-  await mealModel2.deleteMany({});
+  await mealModel.deleteMany({});
   await foodModel.deleteMany({});
   await usersModel.deleteMany({});
   await categoryModel.deleteMany({});
@@ -106,7 +106,7 @@ test("POST request for a user should return a 200 and should be retrieved with a
   const testToken = await login("adminuser@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Asado",
       foods: foods,
@@ -116,7 +116,7 @@ test("POST request for a user should return a 200 and should be retrieved with a
     .set("Authorization", "Bearer " + testToken);
   expect(response.statusCode).toEqual(200);
   const response1 = await request(app)
-    .get("/api/meals2/user")
+    .get("/api/meals/user")
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
   expect(response1._body.data[0].name).toEqual("Asado");
@@ -130,7 +130,7 @@ test("A meal cannot be created without name", async () => {
   const testToken = await login("adminuser1@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "",
       foods: foods,
@@ -146,7 +146,7 @@ test("Deleting a meal successfully should result in a 200 status code and is not
   const testToken = await login("adminuser3@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Asado",
       foods: foods,
@@ -156,14 +156,14 @@ test("Deleting a meal successfully should result in a 200 status code and is not
     .set("Authorization", "Bearer " + testToken);
   //console.log(response._body.data);
   const mealId = response._body.data._id;
-  const mealBeforeDelete = await mealModel2.findById(mealId);
+  const mealBeforeDelete = await mealModel.findById(mealId);
   expect(mealBeforeDelete).toBeTruthy();
 
   const response1 = await request(app)
-    .delete("/api/meals2/" + mealId)
+    .delete("/api/meals/" + mealId)
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
-  const mealAfterDelete = await mealModel2.findById(mealId);
+  const mealAfterDelete = await mealModel.findById(mealId);
   expect(mealAfterDelete).toBeNull();
   const responseParsed1 = JSON.parse(response1.text);
   expect(responseParsed1.message).toEqual("Meal successfully deleted");
@@ -173,7 +173,7 @@ test("Updating a the name and weigth of a meal and a food should return a 200 st
   const testToken = await login("adminuser4@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Carne",
       foods: foods,
@@ -183,20 +183,20 @@ test("Updating a the name and weigth of a meal and a food should return a 200 st
     .set("Authorization", "Bearer " + testToken);
 
   const mealId = response._body.data._id;
-  const mealBeforeUpdate = await mealModel2.findById(mealId);
+  const mealBeforeUpdate = await mealModel.findById(mealId);
   expect(mealBeforeUpdate).toBeTruthy();
   expect(mealBeforeUpdate.name).toEqual("Carne");
   foods[0].weightConsumed = 0;
 
   const response1 = await request(app)
-    .put("/api/meals2/" + mealId)
+    .put("/api/meals/" + mealId)
     .send({
       name: "Carne con papas",
       foods: foods,
     })
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
-  const mealAfterUpdate = await mealModel2.findById(mealId);
+  const mealAfterUpdate = await mealModel.findById(mealId);
   expect(mealAfterUpdate.name).toEqual("Carne con papas");
 });
 
@@ -210,7 +210,7 @@ test("Retrieving meals for a user on a specific date should return a 200 status 
   const dia = fechaActual.getDate().toString().padStart(2, "0");
 
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Asado",
       foods: foods,
@@ -223,10 +223,10 @@ test("Retrieving meals for a user on a specific date should return a 200 status 
   const fechaFormateada = `${año}-${mes}-${dia}`;
 
   const response1 = await request(app)
-    .get("/api/meals2/user/date/" + fechaFormateada)
+    .get("/api/meals/user/date/" + fechaFormateada)
     .set("Authorization", "Bearer " + testToken);
   const mealId = response1._body.mealsToSend[0]._id;
-  const meal = await mealModel2.findById(mealId);
+  const meal = await mealModel.findById(mealId);
   expect(meal).toBeTruthy();
   const recievedDate = new Date(response1._body.mealsToSend[0].date);
   expect(recievedDate.getDate()).toEqual(fechaActual.getDate());
@@ -236,7 +236,7 @@ test("Retrieving meals for a user on a specific date should return a 200 status 
 
   expect(response1.statusCode).toEqual(200);
   const response2 = await request(app)
-    .get("/api/meals2/user/date/2025-08-04")
+    .get("/api/meals/user/date/2025-08-04")
     .set("Authorization", "Bearer " + testToken);
   expect(response2._body.mealsToSend[0]).toBeUndefined();
 });
@@ -245,7 +245,7 @@ test("Calories between two dates should return each day and calories", async () 
   const testToken = await login("adminuser6@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Asado",
       foods: foods,
@@ -262,7 +262,7 @@ test("Calories between two dates should return each day and calories", async () 
   );
 
   const response1 = await request(app)
-    .get("/api/meals2/user/between/" + startDate + "/" + endDate)
+    .get("/api/meals/user/between/" + startDate + "/" + endDate)
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
 
@@ -278,7 +278,7 @@ test("Calories between two dates should return total calories", async () => {
   const foods = await createFoods(testToken);
   const date = new Date();
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Asado",
       foods: foods,
@@ -287,7 +287,7 @@ test("Calories between two dates should return total calories", async () => {
     })
     .set("Authorization", "Bearer " + testToken);
   const response2 = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Asado",
       foods: foods,
@@ -305,7 +305,7 @@ test("Calories between two dates should return total calories", async () => {
   );
 
   const response3 = await request(app)
-    .get("/api/meals2/user/startDate/" + startDate + "/endDate/" + endDate)
+    .get("/api/meals/user/startDate/" + startDate + "/endDate/" + endDate)
     .set("Authorization", "Bearer " + testToken);
   expect(response3.statusCode).toEqual(200);
   expect(response3._body.totalCalorias).toEqual(340);
@@ -317,7 +317,7 @@ test("Can't edit a meal from another user", async () => {
 
   const foods = await createFoods(testToken1);
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Asado",
       foods: foods,
@@ -327,13 +327,13 @@ test("Can't edit a meal from another user", async () => {
     .set("Authorization", "Bearer " + testToken1);
 
   const mealId = response._body.data._id;
-  const mealBeforeUpdate = await mealModel2.findById(mealId);
+  const mealBeforeUpdate = await mealModel.findById(mealId);
   expect(mealBeforeUpdate).toBeTruthy();
   expect(mealBeforeUpdate.name).toEqual("Asado");
   foods[0].weightConsumed = 0;
 
   const response1 = await request(app)
-    .put("/api/meals2/" + mealId)
+    .put("/api/meals/" + mealId)
     .send({
       name: "Carne con papas",
       foods: foods,
@@ -349,7 +349,7 @@ test("Can't delete a meal from another user", async () => {
 
   const foods = await createFoods(testToken1);
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Asado",
       foods: foods,
@@ -360,7 +360,7 @@ test("Can't delete a meal from another user", async () => {
 
   const mealId = response._body.data._id;
   const response1 = await request(app)
-    .delete("/api/meals2/" + mealId)
+    .delete("/api/meals/" + mealId)
     .set("Authorization", "Bearer " + testToken2);
   expect(response1.statusCode).toEqual(403);
   const responseParsed1 = JSON.parse(response1.text);

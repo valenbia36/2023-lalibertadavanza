@@ -65,12 +65,13 @@ const addRateToRecipe = async (req, res) => {
 };
 const updateRecipeById = async (req, res) => {
   try {
-    if (req.userId != req.body.creator) {
+    const recipe = await recipeModel.findById({ _id: req.params.id });
+    if (req.userId != recipe.creator.toString()) {
       return handleHttpError(res, "UNAUTHORIZED", 403);
     }
 
     // Validar que todos los pasos tengan texto
-    const steps = req.body.steps;
+    const steps = recipe.steps;
     if (!steps.every((step) => step.text.trim().length > 0)) {
       return handleHttpError(res, "ALL_STEPS_MUST_HAVE_TEXT", 400);
     }
@@ -78,10 +79,11 @@ const updateRecipeById = async (req, res) => {
     const data = await recipeModel.findOneAndUpdate(
       { _id: req.params.id },
       req.body,
-      { new: true } // Para devolver el documento actualizado
+      { new: true }
     );
     res.send({ data });
   } catch (e) {
+    console.log(e);
     handleHttpError(res, "ERROR_UPDATE_MEAL", 500);
   }
 };

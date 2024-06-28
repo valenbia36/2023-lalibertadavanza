@@ -26,6 +26,8 @@ const ratingSchema = new mongoose.Schema({
   rate: {
     type: Number,
     required: true,
+    min: [1, "Minimum value must be 1."],
+    max: [5, "Maximum value must be 5"],
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,

@@ -35,25 +35,6 @@ async function login(email) {
   return response1._body.token;
 }
 
-async function login2() {
-  const response = await request(app).post("/api/auth/register").send({
-    // se registra
-    firstName: "test",
-    lastName: "user2",
-    email: "adminuser2@admin.com",
-    password: "adminuser",
-    sex: "male",
-    age: "23",
-    height: "1.80",
-    weight: "70",
-  });
-  const response1 = await request(app).post("/api/auth/login").send({
-    // se logea para obtener token
-    email: "adminuser2@admin.com",
-    password: "adminuser",
-  });
-  return response1._body.token;
-}
 async function createCategory(name, testToken) {
   const response = await request(app)
     .post("/api/category")
@@ -147,7 +128,7 @@ test("A recipe is not created when the image format is wrong", async () => {
     .set("Authorization", "Bearer " + testToken);
 
   expect(response.status).toBe(500);
-  expect(response.text.message).toEqual("ERROR_CREATE_RECIPE");
+  expect(response.body).toHaveProperty("message", "ERROR_CREATE_RECIPE");
 });
 test("A recipe is not created when there is no text in the steps", async () => {
   const testToken = await login("adminuser@admin.com");
@@ -162,7 +143,7 @@ test("A recipe is not created when there is no text in the steps", async () => {
     .set("Authorization", "Bearer " + testToken);
 
   expect(response.status).toBe(500);
-  expect(response.text.message).toEqual("ERROR_CREATE_RECIPE");
+  expect(response.body).toHaveProperty("message", "ERROR_CREATE_RECIPE");
 });
 
 test("A recipe with multiple foods is created and it has all the ingredients added correctly", async () => {
@@ -233,6 +214,7 @@ test("An user that it's not the creator cannot update the recipe", async () => {
     .set("Authorization", "Bearer " + testToken2);
   //SACAR EL CREATOR DE LA RESPUESTA
   expect(response1.statusCode).toEqual(403);
+  expect(response1.body).toHaveProperty("message", "UNAUTHORIZED");
 });
 
 test("A new recipe is created and its retrieved correctly when making a GET request", async () => {
@@ -270,7 +252,7 @@ test("A new recipe is created and its retrieved correctly when making a GET requ
   expect(newRecipe.steps[0].text).toEqual("Step 1");
 });
 
-test("[PUT RATE] Esto deberia retornar un 200", async () => {
+test("[PUT RATE] A recipe is rated with 3 after its created", async () => {
   const testToken = await login("adminuser@admin.com");
   const foods = await createFoods(testToken);
   const response1 = await request(app)
@@ -293,36 +275,56 @@ test("[PUT RATE] Esto deberia retornar un 200", async () => {
     .set("Authorization", "Bearer " + testToken);
   expect(response2.statusCode).toEqual(200);
   const responseParsed2 = JSON.parse(response2.text);
-  console.log(responseParsed2.data);
-  //expect(responseParsed2.data)
+  expect(responseParsed2.data.ratings.length).toEqual(1);
+  expect(responseParsed2.data.ratings[0].rate).toEqual(3);
 });
 
-test("No se  creo la receta correctamente por datos incorrectos dentro de foods", async () => {
-  const testToken = generateTestToken();
-  const response = await request(app)
+test("[PUT RATE] A recipe cannot be rated with less than 1 and sends an error", async () => {
+  const testToken = await login("adminuser@admin.com");
+  const foods = await createFoods(testToken);
+  const response1 = await request(app)
     .post("/api/recipes")
     .send({
-      name: "Nueva Receta",
-      foods: [
-        {
-          name: "Lomo",
-          calories: 500,
-          weight: "sasas",
-          category: "Carnes Rojas",
-          carbs: 100,
-          proteins: 300,
-          fats: 0,
-          weightConsumed: 11,
-          totalCalories: 11,
-          totalCarbs: 2,
-          totalProteins: 7,
-          totalFats: 0,
-        },
-      ],
-      steps: [{ text: "Paso 1" }],
-      userId: "65aeb07036d8ac71f781636b",
+      name: "New Recipe",
+      foods: foods,
+      steps: [{ text: "Step 1" }],
     })
     .set("Authorization", "Bearer " + testToken);
+  const responseParsed = JSON.parse(response1.text);
+  const mealId = responseParsed.data._id;
+  const req = {
+    rate: 0,
+    id: mealId,
+  };
+  const response2 = await request(app)
+    .put("/api/recipes/rate/" + mealId)
+    .send(req)
+    .set("Authorization", "Bearer " + testToken);
+  expect(response2.statusCode).toEqual(500);
+  expect(response2.body).toHaveProperty("message", "ERROR_ADD_RATE");
+});
 
-  expect(response.status).toBe(400);
+test("[PUT RATE] A recipe cannot be rated with more than 5 and sends an error", async () => {
+  const testToken = await login("adminuser@admin.com");
+  const foods = await createFoods(testToken);
+  const response1 = await request(app)
+    .post("/api/recipes")
+    .send({
+      name: "New Recipe",
+      foods: foods,
+      steps: [{ text: "Step 1" }],
+    })
+    .set("Authorization", "Bearer " + testToken);
+  const responseParsed = JSON.parse(response1.text);
+  const mealId = responseParsed.data._id;
+  const req = {
+    rate: 6,
+    id: mealId,
+  };
+  const response2 = await request(app)
+    .put("/api/recipes/rate/" + mealId)
+    .send(req)
+    .set("Authorization", "Bearer " + testToken);
+  expect(response2.statusCode).toEqual(500);
+  expect(response2.body).toHaveProperty("message", "ERROR_ADD_RATE");
 });

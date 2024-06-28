@@ -46,9 +46,7 @@ const saveWeek = async (req, res) => {
 
     res.status(200).json({ success: true, data: result });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, error: "Error al actualizar el plan." });
+    res.status(500).json({ success: false, error: "ERROR_PLAN_UPDATE" });
   }
 };
 

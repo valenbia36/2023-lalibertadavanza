@@ -1,77 +1,183 @@
 const request = require("supertest");
 const app = require("../app");
-const { weekModel } = require("../models");
+const {
+  weekModel,
+  recipeModel,
+  foodModel,
+  categoryModel,
+} = require("../models");
 const jwt = require("jsonwebtoken");
 beforeAll(async () => {
   await weekModel.deleteMany({});
+  await recipeModel.deleteMany({});
+  await foodModel.deleteMany({});
+  await categoryModel.deleteMany({});
 });
-function generateTestToken() {
-  const genericUserData = {
-    userId: "genericUserId",
+async function login(email) {
+  const response = await request(app).post("/api/auth/register").send({
+    // se registra
     firstName: "test",
     lastName: "user",
-    email: "testuser@example.com",
+    email: email,
+    password: "adminuser",
     sex: "male",
-    age: 25,
-    height: 1.75,
-    weight: 68,
-  };
-
-  const secretKey = "llave_secreta";
-  const options = { expiresIn: "1h" };
-
-  return jwt.sign(genericUserData, secretKey, options);
+    age: "23",
+    height: "1.80",
+    weight: "70",
+  });
+  const response1 = await request(app).post("/api/auth/login").send({
+    // se logea para obtener token
+    email: email,
+    password: "adminuser",
+  });
+  return response1._body.token;
+}
+async function createCategory(name, testToken) {
+  const response = await request(app)
+    .post("/api/category")
+    .send({
+      name: name,
+    })
+    .set("Authorization", "Bearer " + testToken);
+  return response._body.data._id;
 }
 
-test("No se creo la week correctamente por data incorrecta", async () => {
-  const testToken = generateTestToken();
+async function createFoods(token) {
+  const category = await createCategory("Carne", token);
+  const foodToSend1 = {
+    name: "Lomo",
+    calories: 2,
+    weight: 10,
+    category: category,
+    carbs: 0,
+    proteins: 0,
+    fats: 0,
+  };
+  const foodToSend2 = {
+    name: "Vacio",
+    calories: 2,
+    weight: 10,
+    category: category,
+    carbs: 10,
+    proteins: 10,
+    fats: 10,
+  };
   const response = await request(app)
-    .put("/api/weeks")
-    .send({})
-    .set("Authorization", "Bearer " + testToken);
-  expect(response.status).toBe(400);
-});
+    .post("/api/foods")
+    .send(foodToSend1)
+    .set("Authorization", "Bearer " + token);
+  const response1 = await request(app)
+    .post("/api/foods")
+    .send(foodToSend2)
+    .set("Authorization", "Bearer " + token);
+  //console.log(response1._body);
+  let foods = [
+    { foodId: response._body.data._id, weightConsumed: 100 },
+    { foodId: response1._body.data._id, weightConsumed: 200 },
+  ];
+  return foods;
+}
 
-test("Se creo la week correctamente", async () => {
+test("A week is created with a recipe breakfast in Friday and its retrievied correctly", async () => {
+  const testToken = await login("adminuser@admin.com");
+  const foods = await createFoods(testToken);
+
+  const recipeToSend = {
+    name: "Nueva Receta",
+    foods: foods,
+    steps: [{ text: "Paso 1" }],
+  };
+
   const response = await request(app)
-    .put("/api/weeks")
-    .send({
-      userId: "65b96e1981dd456178731ac5",
-    })
+    .post("/api/recipes")
+    .send(recipeToSend)
     .set("Authorization", "Bearer " + testToken);
-  expect(response.status).toBe(200);
+
+  const weekToSend = {
+    Friday: {
+      breakfast: response._body.data._id,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+  };
+
+  const response1 = await request(app)
+    .put("/api/weeks")
+    .send(weekToSend)
+    .set("Authorization", "Bearer " + testToken);
+  expect(response1.status).toBe(200);
+
+  const weekId = response1._body.data._id;
+
+  const response2 = await request(app)
+    .get("/api/weeks/")
+    .set("Authorization", "Bearer " + testToken);
+
+  expect(response2.status).toBe(200);
+  expect(response2._body[0].Friday.breakfast.name).toEqual(recipeToSend.name);
+  expect(response2._body[0].Friday.breakfast.foods).toHaveLength(2);
+  expect(response2._body[0].Friday.breakfast.foods[0].foodId).toEqual(
+    recipeToSend.foods[0].foodId
+  );
+  expect(response2._body[0].Friday.breakfast.foods[0].weightConsumed).toEqual(
+    recipeToSend.foods[0].weightConsumed
+  );
+  expect(response2._body[0].Friday.breakfast.foods[1].foodId).toEqual(
+    recipeToSend.foods[1].foodId
+  );
+  expect(response2._body[0].Friday.breakfast.foods[1].weightConsumed).toEqual(
+    recipeToSend.foods[1].weightConsumed
+  );
+  expect(response2._body[0].Friday.breakfast.steps[0].text).toEqual(
+    recipeToSend.steps[0].text
+  );
 });
-test("Se creo la week correctamente con informacion de un dia vacio", async () => {
-  const testToken = generateTestToken();
-  const response = await request(app)
+test("A week is correctly created with no information", async () => {
+  const testToken = await login("adminuser2@admin.com");
+
+  const weekData = {
+    Friday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+  };
+
+  const createWeekResponse = await request(app)
     .put("/api/weeks")
-    .send({
-      userId: "65b96e1981dd456178731ac5",
-      Friday: {
-        breakfast: null,
-        lunch: null,
-        snack: null,
-        dinner: null,
-      },
-    })
+    .send(weekData)
     .set("Authorization", "Bearer " + testToken);
-  expect(response.status).toBe(200);
+  expect(createWeekResponse.status).toBe(200);
+
+  const getWeekResponse = await request(app)
+    .get(`/api/weeks/`)
+    .set("Authorization", "Bearer " + testToken);
+  expect(getWeekResponse.status).toBe(200);
+
+  expect(getWeekResponse._body[0].Friday.breakfast).toBeNull();
+  expect(getWeekResponse._body[0].Friday.lunch).toBeNull();
+  expect(getWeekResponse._body[0].Friday.snack).toBeNull();
+  expect(getWeekResponse._body[0].Friday.dinner).toBeNull();
 });
-test("No se creo la week correctamente porque recibe informacion invalida", async () => {
-  const testToken = generateTestToken();
-  const response = await request(app)
+test("Week creation fails with invalid information", async () => {
+  const testToken = await login("adminuser2@admin.com");
+
+  const invalidWeekData = {
+    Friday: {
+      breakfast: null,
+      lunch: "",
+      snack: null,
+      dinner: null,
+    },
+  };
+
+  const createWeekResponse = await request(app)
     .put("/api/weeks")
-    .send({
-      userId: "65b96e1981dd456178731ac5",
-      Friday: {
-        breakfast: null,
-        lunch: "",
-        snack: null,
-        dinner: null,
-      },
-    })
+    .send(invalidWeekData)
     .set("Authorization", "Bearer " + testToken);
-  expect(response.status).toBe(500);
+  expect(createWeekResponse.status).toBe(500);
 });
 
 test("Error Handling de get", async () => {
@@ -112,57 +218,4 @@ test("Un usuario crea una week y se trae correctamente", async () => {
     .get("/api/weeks/" + weekId)
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
-});
-
-test("Un usuario crea una week con informacion y se trae correctamente", async () => {
-  const testToken = generateTestToken();
-  const createRecipeResponse = await request(app)
-    .post("/api/recipes")
-    .send({
-      name: "Nueva Receta",
-      foods: [
-        {
-          name: "Lomo",
-          calories: 500,
-          weight: 500,
-          category: "Carnes Rojas",
-          carbs: 100,
-          proteins: 300,
-          fats: 0,
-          weightConsumed: 11,
-          totalCalories: 11,
-          totalCarbs: 2,
-          totalProteins: 7,
-          totalFats: 0,
-        },
-      ],
-      steps: [{ text: "Paso 1" }],
-      userId: "65aeb07036d8ac71f781636b",
-    })
-    .set("Authorization", "Bearer " + testToken);
-  const createdRecipe = JSON.parse(createRecipeResponse.text);
-  const recipeId = createdRecipe.data._id;
-
-  const response = await request(app)
-    .put("/api/weeks")
-    .send({
-      userId: "65b96e1981dd456178731ac5",
-      Friday: {
-        breakfast: recipeId, // Use the recipeId obtained from the createRecipeResponse
-      },
-    })
-    .set("Authorization", "Bearer " + testToken);
-
-  expect(response.statusCode).toEqual(200);
-
-  // Retrieve the created week using GET request
-  const getResponse = await request(app)
-    .get("/api/weeks/65b96e1981dd456178731ac5")
-    .set("Authorization", "Bearer " + testToken);
-
-  expect(getResponse.statusCode).toEqual(200);
-  const getResponseParsed = JSON.parse(getResponse.text);
-
-  expect(getResponseParsed[0].userId).toEqual("65b96e1981dd456178731ac5");
-  expect(getResponseParsed[0].Friday.breakfast.name).toEqual("Nueva Receta");
 });

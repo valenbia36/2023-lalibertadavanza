@@ -22,7 +22,7 @@ const loginController = async (req, res) => {
   try {
     const user = await usersModel
       .findOne({ email: req.body.email })
-      .select("firstName lastName email password");
+      .select("firstName _id lastName email password");
     if (!user) {
       handleHttpError(res, "USER_NOT_EXISTS", 404);
       return;

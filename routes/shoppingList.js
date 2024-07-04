@@ -5,7 +5,7 @@ const { verifyToken } = require("../utils/handleJWT");
 const extractUserIdMiddleware = require("../utils/handleUserID");
 
 // Ruta para guardar la lista de compras
-router.post("/shopping-list", verifyToken, extractUserIdMiddleware);
+router.post("/shopping-list", verifyToken, extractUserIdMiddleware, createShoppingList);
 
 // Ruta para obtener la lista de compras
 router.get("/shopping-list");

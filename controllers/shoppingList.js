@@ -5,9 +5,10 @@ const { handleHttpError } = require("../utils/handleErrors");
 const createShoppingList = async (req, res) => {
   try {
     const user = req.userId;
-    //const recipe = { ...req.body, creator };
-    const shoppingList = { re };
-    const data = await shoppingListModel.create(recipe);
+    console.log(req.body)
+    const shoppingList = new shoppingListModel({ user, weeklyTotal: req.body.weeklyTotal });
+    await shoppingList.save();
+    res.status(200).json(shoppingList);
 
     res.send({ data });
   } catch (e) {

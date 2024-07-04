@@ -8,6 +8,7 @@ const models = {
   intermittentFastingModel: require("./intermittentFasting"),
   recipeModel: require("./recipe"),
   weekModel: require("./week"),
+  shoppingListModel: require('./shoppingList')
 };
 
 module.exports = models;

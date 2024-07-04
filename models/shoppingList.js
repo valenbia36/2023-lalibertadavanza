@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const mongooseDelete = require("mongoose-delete");
 
 const shoppingListSchema = new mongoose.Schema({
   user: {

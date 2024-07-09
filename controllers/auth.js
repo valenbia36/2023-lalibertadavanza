@@ -84,6 +84,7 @@ const updateUserPassword = async (req, res) => {
       { _id: userId },
       { password: password }
     );
+    console.log(data);
     res.status(200).send({ message: "PASSWORD_UPDATE_SUCCESFULL" });
   } catch (e) {
     handleHttpError(res, "ERROR_UPDATE_USER_PASSWORD", 500);
@@ -92,12 +93,23 @@ const updateUserPassword = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const userId = req.userId;
-    const data = await usersModel.findOneAndUpdate({ _id: userId }, req.body);
-    res.status(200).send({ message: "USER_UPDATE_SUCCESFULL" });
+    const userId = req.params.id;
+    const updatedUser = await usersModel.findOneAndUpdate(
+      { email: req.params.email },
+      req.body,
+      { new: true } // Esto devolverá el documento actualizado
+    );
+
+    if (!updatedUser) {
+      return res.status(404).send({ message: "USER_NOT_FOUND" });
+    }
+
+    res
+      .status(200)
+      .send({ message: "USER_UPDATE_SUCCESFULL", user: updatedUser });
   } catch (e) {
+    console.error(e); // Agregar registro del error
     handleHttpError(res, "ERROR_UPDATE_USER", 500);
-    return 500;
   }
 };
 

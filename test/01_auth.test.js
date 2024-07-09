@@ -44,6 +44,7 @@ test("User sign up is succesfull and new user its stored in the DB", async () =>
   expect(response2.body.data.weight).toEqual(70);
 });
 
+//Ver este, devuelve un 200
 test("User cant update his user with a random token", async () => {
   const response = await request(app)
     .put("/api/auth/users/updatePassword/")
@@ -66,6 +67,7 @@ test("User cant update his user with an invalid token format", async () => {
   expect(response._body.message).toEqual("Invalid token format");
 });
 
+//Este tambien devuelve 200
 test("User cant update his user without a token", async () => {
   const response = await request(app)
     .put("/api/auth/users/updatePassword/")
@@ -173,7 +175,6 @@ test("User sign up and then delete his account succesfull", async () => {
   const response4 = await request(app) // busca si existe en la base de datos y no existe
     .get("/api/auth/users/")
     .set("Authorization", "Bearer " + response2._body.token);
-  console.log(response3);
   expect(response4.status).toEqual(404);
   expect(response4._body.message).toEqual("USER_NOT_EXISTS");
 });

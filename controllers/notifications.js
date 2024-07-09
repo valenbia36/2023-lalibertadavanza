@@ -4,34 +4,35 @@ const { updateUser } = require("../controllers/auth");
 const { handleHttpError } = require("../utils/handleErrors");
 
 const sendResetPasswordEmail = async (req, res) => {
-  const email = req.body.email;
-  const token = req.body.token;
-  const userName = req.body.userName;
-  const userId = req.body.userId;
-  const url = req.body.url;
-  console.log(email + " " + token + " " + userId);
+  const { email, token, userName, userId, url } = req.body;
 
   try {
     const reqUpdateUser = {
       params: {
         id: userId,
+        email: email,
       },
       body: {
         secretToken: token,
       },
     };
 
+    let updateUserResponseStatus;
+    let updateUserResponseData;
+
     const resUpdateUser = {
-      send: (data) => {},
-      status: (statusCode) => {},
+      send: (data) => {
+        updateUserResponseData = data;
+      },
+      status: (statusCode) => {
+        updateUserResponseStatus = statusCode;
+        return resUpdateUser;
+      },
     };
 
-    const updateUserSecretToken = await updateUser(
-      reqUpdateUser,
-      resUpdateUser
-    );
+    await updateUser(reqUpdateUser, resUpdateUser);
 
-    if (updateUserSecretToken === 200) {
+    if (updateUserResponseStatus === 200) {
       const send_to = email;
       const sent_from = process.env.EMAIL_USER;
       const reply_to = email;
@@ -53,9 +54,10 @@ const sendResetPasswordEmail = async (req, res) => {
 
       res.status(200).json({ success: true, message: "Email Sent" });
     } else {
-      res.status(500);
+      res.status(500).json({ error: "Failed to update user token" });
     }
   } catch (error) {
+    console.error(error); // Agregar registro del error
     res.status(500).json({ error: error.message });
   }
 };

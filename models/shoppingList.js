@@ -11,7 +11,7 @@ const shoppingListSchema = new mongoose.Schema({
     {
       foodId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "food", // Referencia al modelo de alimentos
+        ref: "foods", // Referencia al modelo de alimentos
         required: true,
       },
       weightConsumed: {

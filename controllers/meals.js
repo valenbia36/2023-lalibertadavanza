@@ -1,4 +1,4 @@
-const { mealModel, foodModel } = require("../models");
+const { mealModel, foodModel, intermittentFastingModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
 const jwt = require("jsonwebtoken");
 
@@ -11,6 +11,35 @@ const jwt = require("jsonwebtoken");
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }
 }; */
+async function getActiveIntermittentFastingByUserId(userId) {
+  try {
+    const data = await intermittentFastingModel.find({
+      userId: userId,
+    });
+    const today = new Date();
+    today.setSeconds(0);
+    today.setHours(today.getHours() - 3);
+    const filteredData = data.find(
+      (item) => today >= item.startDateTime && today <= item.endDateTime
+    );
+    return filteredData;
+  } catch (e) {
+    handleHttpError(
+      res,
+      "ERROR_GET_ACTIVE_INTERMITTENT_FASTING_BY_USER_ID",
+      500
+    );
+  }
+}
+async function deleteActiveIntermittentFasting(id) {
+  try {
+    const data = await intermittentFastingModel.delete({
+      _id: id,
+    });
+  } catch (e) {
+    handleHttpError(res, "ERROR_DELETE_GOAL", 500);
+  }
+}
 
 function calculateNutritionalInformation(meal) {
   let totalCalories = 0;
@@ -111,6 +140,16 @@ const createMeal = async (req, res) => {
     const userId = req.userId;
     // Agrega el userId a los datos de la comida antes de crearla
     const mealData = { ...req.body, userId };
+    const activeIntermittent = await getActiveIntermittentFastingByUserId(
+      userId
+    );
+    if (
+      activeIntermittent &&
+      new Date(mealData.date) >= new Date(activeIntermittent.startDateTime) &&
+      new Date(mealData.date) <= new Date(activeIntermittent.endDateTime)
+    ) {
+      await deleteActiveIntermittentFasting(activeIntermittent._id);
+    }
     const data = await mealModel.create(mealData);
     // Eliminar el userId de la respuesta
     const { userId: removedUserId, ...responseData } = data.toObject();
@@ -137,7 +176,17 @@ const updateMealById = async (req, res) => {
       { _id: mealId },
       req.body
     );
-
+    const activeIntermittent = await getActiveIntermittentFastingByUserId(
+      userId
+    );
+    if (
+      activeIntermittent &&
+      new Date(updatedMeal.date) >=
+        new Date(activeIntermittent.startDateTime) &&
+      new Date(updatedMeal.date) <= new Date(activeIntermittent.endDateTime)
+    ) {
+      await deleteActiveIntermittentFasting(activeIntermittent._id);
+    }
     // Eliminar el userId de la respuesta
     const { userId: removedUserId, ...responseData } = updatedMeal.toObject();
 

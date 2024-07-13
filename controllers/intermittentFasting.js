@@ -50,7 +50,7 @@ const createIntermittentFasting = async (req, res) => {
   }
 };
 
-const getIntermittentFastingByUserId = async (req, res) => {
+/*const getIntermittentFastingByUserId = async (req, res) => {
   try {
     const data = await intermittentFastingModel.find({
       userId: req.userId,
@@ -59,19 +59,42 @@ const getIntermittentFastingByUserId = async (req, res) => {
   } catch (e) {
     handleHttpError(res, "ERROR_GET_INTERMITTENT_FASTING_BY_USER_ID", 500);
   }
-};
+};*/
 
 const getActiveIntermittentFastingByUserId = async (req, res) => {
   try {
-    const currentDate = new Date();
-
     const data = await intermittentFastingModel.find({
       userId: req.userId,
     });
-    const filteredData = data.filter(
-      (item) =>
-        new Date() >= item.startDateTime && new Date() <= item.endDateTime
+    const today = new Date();
+    today.setSeconds(0);
+    today.setHours(today.getHours() - 3);
+    const filteredData = data.find(
+      (item) => today >= item.startDateTime && today <= item.endDateTime
     );
+    res.send({ filteredData });
+  } catch (e) {
+    handleHttpError(
+      res,
+      "ERROR_GET_ACTIVE_INTERMITTENT_FASTING_BY_USER_ID",
+      500
+    );
+  }
+};
+
+const getNextIntermittentFastingByUserId = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setSeconds(0);
+    today.setHours(today.getHours() - 3);
+    const filteredData = await intermittentFastingModel
+      .find({
+        userId: req.userId,
+        startDateTime: { $gt: today }, // Filtrar por startDateTime mayor que la fecha actual
+      })
+      .sort({ startDateTime: 1 }) // Ordenar por startDateTime ascendente
+      .limit(1); // Limitar el resultado a 1 documento
+
     res.send({ filteredData });
   } catch (e) {
     handleHttpError(
@@ -95,7 +118,8 @@ const deleteActiveIntermittentFasting = async (req, res) => {
 
 module.exports = {
   createIntermittentFasting,
-  getIntermittentFastingByUserId,
+  //getIntermittentFastingByUserId,
   getActiveIntermittentFastingByUserId,
   deleteActiveIntermittentFasting,
+  getNextIntermittentFastingByUserId,
 };

@@ -67,7 +67,12 @@ test("Hola", async () => {
     status: (statusCode) => {},
   };
 
-  sendIntermittentFastingNotificationEmail(reqUpdateUser, resUpdateUser);
+  const response = await sendIntermittentFastingNotificationEmail(
+    reqUpdateUser,
+    resUpdateUser
+  );
+  console.log(response);
+
   //....Agregar assert
 });
 
@@ -81,7 +86,6 @@ test("Hola", async () => {
     age: "23",
     height: "1.80",
     weight: "70",
-    secretToken: "1234",
   });
 
   const response1 = await request(app).get(

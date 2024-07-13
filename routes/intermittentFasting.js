@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   createIntermittentFasting,
-  getIntermittentFastingByUserId,
+  getNextIntermittentFastingByUserId,
   getActiveIntermittentFastingByUserId,
   deleteActiveIntermittentFasting,
 } = require("../controllers/intermittentFasting");
@@ -15,11 +15,17 @@ router.post(
   extractUserIdMiddleware,
   createIntermittentFasting
 );
-router.get(
+/* router.get(
   "/",
   verifyToken,
   extractUserIdMiddleware,
   getIntermittentFastingByUserId
+); */
+router.get(
+  "/next",
+  verifyToken,
+  extractUserIdMiddleware,
+  getNextIntermittentFastingByUserId
 );
 router.get(
   "/active/",

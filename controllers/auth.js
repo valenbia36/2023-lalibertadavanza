@@ -76,9 +76,10 @@ const getUserByEmail = async (req, res) => {
 
 const updateUserPassword = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.body._id;
     const newPassword = req.body.password;
     const password = await encrypt(newPassword);
+    console.log(userId);
 
     const data = await usersModel.findOneAndUpdate(
       { _id: userId },
@@ -97,7 +98,7 @@ const updateUser = async (req, res) => {
     const updatedUser = await usersModel.findOneAndUpdate(
       { email: req.params.email },
       req.body,
-      { new: true } // Esto devolverá el documento actualizado
+      { new: true }
     );
 
     if (!updatedUser) {

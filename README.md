@@ -21,3 +21,5 @@
 4. Iniciar el servidor:
    
    node app
+
+Utiliza npm test para correr todos los tests o npm test -- testEspecifico para correr un test en particular.

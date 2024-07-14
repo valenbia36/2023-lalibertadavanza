@@ -2,6 +2,7 @@ const express = require("express");
 const { weekModel, shoppingListModel } = require("../models");
 
 async function createShoppingList(result) {
+  // Buscar la semana con el plan de comidas del usuario
   const weeks = await weekModel
     .find({ userId: result.userId })
     .populate({
@@ -9,10 +10,8 @@ async function createShoppingList(result) {
       populate: "foods.foodId",
     })
     .exec();
-  const weeksWithLastUpdate = weeks.map((week) => ({
-    ...week.toObject(),
-    lastUpdate: week.updatedAt,
-  }));
+
+  // Estructura para almacenar los totales diarios por alimento
   const dailyTotalPerFood = {};
   const daysOfWeek = [
     "Monday",
@@ -23,54 +22,95 @@ async function createShoppingList(result) {
     "Saturday",
     "Sunday",
   ];
-  const shoppingListData = {};
+
+  // Procesar cada día de la semana
   for (const day of daysOfWeek) {
     const breakfast = weeks[0][day]?.breakfast;
     const lunch = weeks[0][day]?.lunch;
     const snack = weeks[0][day]?.snack;
     const dinner = weeks[0][day]?.dinner;
 
-    shoppingListData[day] = {};
-
     const calculateTotalPerFood = (meal) => {
       if (weeks[0][day][meal] && weeks[0][day][meal].foods) {
         const foods = weeks[0][day][meal].foods;
         foods.forEach((food) => {
           if (!dailyTotalPerFood[food.foodId._id]) {
-            console.log(food.foodId);
             dailyTotalPerFood[food.foodId._id] = 0;
           }
 
           dailyTotalPerFood[food.foodId._id] += food.weightConsumed;
-
-          if (!shoppingListData[day][meal]) {
-            shoppingListData[day][meal] = [];
-          }
-          shoppingListData[day][meal].push(food);
         });
       }
     };
 
+    // Calcular totales para cada comida
     calculateTotalPerFood("breakfast");
     calculateTotalPerFood("lunch");
     calculateTotalPerFood("snack");
     calculateTotalPerFood("dinner");
   }
+
+  // Transformar los datos para la lista de compras
   const transformToShoppingList = (data) => {
     return Object.entries(data).map(([foodId, weightConsumed]) => ({
-      foodId: foodId, // Convertir el ID de alimento a ObjectId
+      foodId: foodId,
       weightConsumed,
       quantityToBuy: 0, // Valor por defecto
     }));
   };
+
   const weeklyTotal = transformToShoppingList(dailyTotalPerFood);
-  await shoppingListModel.deleteMany({ user: result.userId });
-  const shoppingList = new shoppingListModel({
-    user: result.userId,
-    weeklyTotal: weeklyTotal,
-  });
-  await shoppingList.save();
+
+  // Buscar la lista de compras existente
+  const existingShoppingList = await shoppingListModel
+    .findOne({ user: result.userId })
+    .exec();
+
+  if (existingShoppingList) {
+    // Mapeo de la lista existente por ID de alimento
+    const existingItemsMap = existingShoppingList.weeklyTotal.reduce(
+      (map, item) => {
+        map[item.foodId.toString()] = item;
+        return map;
+      },
+      {}
+    );
+
+    // Actualizar la lista de compras existente
+    const updatedWeeklyTotal = weeklyTotal.map((newItem) => {
+      const existingItem = existingItemsMap[newItem.foodId.toString()];
+
+      if (existingItem) {
+        // Actualizar weightConsumed y verificar quantityToBuy
+        const updatedItem = {
+          ...existingItem,
+          weightConsumed: newItem.weightConsumed, // Actualizar weightConsumed
+          quantityToBuy: existingItem.quantityToBuy, // Mantener quantityToBuy
+        };
+        // Ajustar quantityToBuy si es mayor que weightConsumed
+        if (updatedItem.quantityToBuy > updatedItem.weightConsumed) {
+          updatedItem.quantityToBuy = updatedItem.weightConsumed;
+        }
+        return updatedItem;
+      } else {
+        // Si el alimento no estaba en la lista existente, añadirlo
+        return newItem;
+      }
+    });
+
+    // Guardar los cambios en la lista de compras
+    existingShoppingList.weeklyTotal = updatedWeeklyTotal;
+    await existingShoppingList.save();
+  } else {
+    // Crear una nueva lista de compras si no existe
+    const shoppingList = new shoppingListModel({
+      user: result.userId,
+      weeklyTotal: weeklyTotal,
+    });
+    await shoppingList.save();
+  }
 }
+
 const getWeek = async (req, res) => {
   try {
     const userId = req.userId;

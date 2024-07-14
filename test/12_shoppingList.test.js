@@ -5,7 +5,7 @@ const {
   usersModel,
   foodModel,
   categoryModel,
-  shoppingListModel
+  shoppingListModel,
 } = require("../models");
 const mongoose = require("mongoose");
 const sinon = require("sinon");
@@ -83,23 +83,24 @@ async function createFoods(token) {
 }
 
 test("Test 1", async () => {
-    const testToken = await login("adminuser@admin.com");
-    const foods = await createFoods(testToken);
-    const response = await request(app)
-        .post("/api/shoppingList/shopping-list")
-        .send({
-            weeklyTotal: foods.map(food => ({
-            foodId: food.foodId,
-            weightConsumed: food.weightConsumed,
-            quantityToBuy: 100,
-            })),
-        })
-        .set("Authorization", "Bearer " + testToken);
+  const testToken = await login("adminuser@admin.com");
+  const foods = await createFoods(testToken);
+  const response = await request(app)
+    .post("/api/shoppingList/shopping-list")
+    .send({
+      weeklyTotal: foods.map((food) => ({
+        foodId: food.foodId,
+        weightConsumed: food.weightConsumed,
+        quantityToBuy: 100,
+      })),
+    })
+    .set("Authorization", "Bearer " + testToken);
 
-        expect(response.status).toBe(200);
-        expect(response.body.weeklyTotal).toHaveLength(foods.length);
-        response.body.weeklyTotal.forEach((item, index) => {
-        expect(item.foodId).toBe(foods[index]._id.toString());
-        expect(item.weightConsumed).toBe(200);
-        expect(item.quantityToBuy).toBe(100);
-  })});
+  expect(response.status).toBe(200);
+  expect(response.body.weeklyTotal).toHaveLength(foods.length);
+  response.body.weeklyTotal.forEach((item, index) => {
+    expect(item.foodId).toBe(foods[index]._id.toString());
+    expect(item.weightConsumed).toBe(200);
+    expect(item.quantityToBuy).toBe(100);
+  });
+});

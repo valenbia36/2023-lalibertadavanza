@@ -11,7 +11,6 @@ const createShoppingList = async (req, res) => {
     });
     await shoppingList.save();
     res.status(200).json(shoppingList);
-
     res.send({ data });
   } catch (e) {
     handleHttpError(res, "ERROR_CREATE_RECIPE", 500);

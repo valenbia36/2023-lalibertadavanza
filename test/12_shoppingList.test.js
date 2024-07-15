@@ -86,7 +86,7 @@ test("Test 1", async () => {
   const testToken = await login("adminuser@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
-    .post("/api/shoppingList/shopping-list")
+    .post("/api/shoppingList")
     .send({
       weeklyTotal: foods.map((food) => ({
         foodId: food.foodId,
@@ -95,7 +95,7 @@ test("Test 1", async () => {
       })),
     })
     .set("Authorization", "Bearer " + testToken);
-
+  console.log(response.body);
   expect(response.status).toBe(200);
   expect(response.body.weeklyTotal).toHaveLength(foods.length);
   response.body.weeklyTotal.forEach((item, index) => {

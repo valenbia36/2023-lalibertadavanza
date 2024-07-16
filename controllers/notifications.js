@@ -91,7 +91,7 @@ const validateToken = async (req, res) => {
     const data = await usersModel.findOne({ secretToken: req.params.token });
     res.send({ data });
   } catch (e) {
-    handleHttpError(res, "ERROR_VALIDATE_TOKEN", 500);
+    handleHttpError(res, "ERROR_VALIDATE_TOKEN", 403);
   }
 };
 

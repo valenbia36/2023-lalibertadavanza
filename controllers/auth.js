@@ -76,16 +76,21 @@ const getUserByEmail = async (req, res) => {
 
 const updateUserPassword = async (req, res) => {
   try {
+    //Problema gigante, la token se valida en el front, NUNCA EN EL BACK
+    const validateToken = await usersModel.findOne({
+      secretToken: req.body.token,
+    });
+    if (!validateToken) {
+      handleHttpError(res, "ERROR_VALIDATE_TOKEN", 403);
+    }
     const userId = req.body._id;
     const newPassword = req.body.password;
     const password = await encrypt(newPassword);
-    console.log(userId);
 
     const data = await usersModel.findOneAndUpdate(
       { _id: userId },
       { password: password }
     );
-    console.log(data);
     res.status(200).send({ message: "PASSWORD_UPDATE_SUCCESFULL" });
   } catch (e) {
     handleHttpError(res, "ERROR_UPDATE_USER_PASSWORD", 500);

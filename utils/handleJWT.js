@@ -34,7 +34,6 @@ function verifyToken(req, res, next) {
   if (!token) {
     return res.status(403).json({ message: "Invalid token format" });
   }
-
   jsonWT.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
       return res.status(401).json({ message: "Failed to authenticate token" });

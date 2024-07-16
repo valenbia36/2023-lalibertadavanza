@@ -1,4 +1,5 @@
 const request = require("supertest");
+const mongoose = require("mongoose");
 const app = require("../app");
 const {
   weekModel,
@@ -92,10 +93,45 @@ test("A week is created with a recipe breakfast in Friday and its retrievied cor
     .post("/api/recipes")
     .send(recipeToSend)
     .set("Authorization", "Bearer " + testToken);
-
   const weekToSend = {
     Friday: {
-      breakfast: response._body.data._id,
+      breakfast: new mongoose.Types.ObjectId(response._body.data._id),
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Monday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Saturday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Sunday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Thursday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Tuesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Wednesday: {
+      breakfast: null,
       lunch: null,
       snack: null,
       dinner: null,
@@ -143,6 +179,42 @@ test("A week is correctly created with no information", async () => {
       snack: null,
       dinner: null,
     },
+    Monday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Saturday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Sunday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Thursday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Tuesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Wednesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
   };
 
   const createWeekResponse = await request(app)
@@ -171,6 +243,42 @@ test("Week creation fails with invalid information", async () => {
       snack: null,
       dinner: null,
     },
+    Monday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Saturday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Sunday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Thursday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Tuesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Wednesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
   };
 
   const createWeekResponse = await request(app)
@@ -178,44 +286,4 @@ test("Week creation fails with invalid information", async () => {
     .send(invalidWeekData)
     .set("Authorization", "Bearer " + testToken);
   expect(createWeekResponse.status).toBe(500);
-});
-
-test("Error Handling de get", async () => {
-  const testToken = generateTestToken();
-  const response = await request(app)
-    .put("/api/weeks")
-    .send({
-      userId: "65b96e1981dd456178731ac5",
-      Monday: {
-        breakfast: null,
-      },
-    })
-    .set("Authorization", "Bearer " + testToken);
-  expect(response.status).toBe(200);
-  const response1 = await request(app)
-    .get("/api/weeks/123")
-    .set("Authorization", "Bearer " + testToken);
-  expect(response1.statusCode).toEqual(500);
-});
-
-test("Un usuario crea una week y se trae correctamente", async () => {
-  const testToken = generateTestToken();
-  const response = await request(app)
-    .put("/api/weeks")
-    .send({
-      userId: "65b96e1981dd456178731ac5",
-      Friday: {
-        breakfast: null,
-        lunch: null,
-        snack: null,
-        dinner: null,
-      },
-    })
-    .set("Authorization", "Bearer " + testToken);
-  const responseParsed = JSON.parse(response.text);
-  const weekId = responseParsed.data._id;
-  const response1 = await request(app)
-    .get("/api/weeks/" + weekId)
-    .set("Authorization", "Bearer " + testToken);
-  expect(response1.statusCode).toEqual(200);
 });

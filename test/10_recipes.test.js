@@ -328,3 +328,36 @@ test("[PUT RATE] A recipe cannot be rated with more than 5 and sends an error", 
   expect(response2.statusCode).toEqual(500);
   expect(response2.body).toHaveProperty("message", "ERROR_ADD_RATE");
 });
+
+test("[PUT RATE] A recipe cannot be rated more than one time per user", async () => {
+  const testToken = await login("adminuser@admin.com");
+  const foods = await createFoods(testToken);
+  const response1 = await request(app)
+    .post("/api/recipes")
+    .send({
+      name: "New Recipe",
+      foods: foods,
+      steps: [{ text: "Step 1" }],
+    })
+    .set("Authorization", "Bearer " + testToken);
+  const responseParsed = JSON.parse(response1.text);
+  const mealId = responseParsed.data._id;
+  const req = {
+    rate: 3,
+    id: mealId,
+  };
+  const response2 = await request(app)
+    .put("/api/recipes/rate/" + mealId)
+    .send(req)
+    .set("Authorization", "Bearer " + testToken);
+  expect(response2.statusCode).toEqual(200);
+  const response3 = await request(app)
+    .put("/api/recipes/rate/" + mealId)
+    .send(req)
+    .set("Authorization", "Bearer " + testToken);
+
+  expect(response3.statusCode).toEqual(401);
+  expect(response3.text).toEqual(
+    '{"status":401,"message":"ERROR_ALREADY_RATED"}'
+  );
+});

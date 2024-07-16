@@ -6,6 +6,7 @@ const {
   foodModel,
   categoryModel,
   shoppingListModel,
+  weekModel,
 } = require("../models");
 const mongoose = require("mongoose");
 const sinon = require("sinon");
@@ -82,25 +83,190 @@ async function createFoods(token) {
   return foods;
 }
 
-test("Test 1", async () => {
-  const testToken = await login("adminuser@admin.com");
+test("Creating a shopping list when saving a week", async () => {
+  const testToken = await login("adminuser1@admin.com");
   const foods = await createFoods(testToken);
+
+  const recipeToSend = {
+    name: "Test Recipe",
+    foods: foods,
+    steps: [{ text: "Step 1" }],
+  };
+
   const response = await request(app)
-    .post("/api/shoppingList")
-    .send({
-      weeklyTotal: foods.map((food) => ({
-        foodId: food.foodId,
-        weightConsumed: food.weightConsumed,
-        quantityToBuy: 100,
-      })),
-    })
+    .post("/api/recipes")
+    .send(recipeToSend)
     .set("Authorization", "Bearer " + testToken);
-  console.log(response.body);
-  expect(response.status).toBe(200);
-  expect(response.body.weeklyTotal).toHaveLength(foods.length);
-  response.body.weeklyTotal.forEach((item, index) => {
-    expect(item.foodId).toBe(foods[index]._id.toString());
-    expect(item.weightConsumed).toBe(200);
-    expect(item.quantityToBuy).toBe(100);
-  });
+
+  const weekToSend = {
+    Friday: {
+      breakfast: new mongoose.Types.ObjectId(response._body.data._id),
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Monday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Saturday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Sunday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Thursday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Tuesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Wednesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+  };
+
+  const saveWeekResponse = await request(app)
+    .put("/api/weeks")
+    .send(weekToSend)
+    .set("Authorization", "Bearer " + testToken);
+  expect(saveWeekResponse.status).toBe(200);
+
+  const shoppingListResponse = await request(app)
+    .get("/api/shoppingList")
+    .set("Authorization", "Bearer " + testToken);
+  expect(shoppingListResponse.status).toBe(200);
+  expect(shoppingListResponse.body.shoppingList.weeklyTotal.length).toEqual(2);
+  const lomoItem = shoppingListResponse.body.shoppingList.weeklyTotal.find(
+    (item) => item.foodId.name === "Lomo"
+  );
+  const vacioItem = shoppingListResponse.body.shoppingList.weeklyTotal.find(
+    (item) => item.foodId.name === "Vacio"
+  );
+  expect(lomoItem).toBeDefined();
+  expect(lomoItem.weightConsumed).toBe(100);
+
+  expect(vacioItem).toBeDefined();
+  expect(vacioItem.weightConsumed).toBe(200);
+});
+
+test("Updating a shopping list with the amount of a food that was purchased", async () => {
+  const testToken = await login("adminuser1@admin.com");
+  const foods = await createFoods(testToken);
+
+  const recipeToSend = {
+    name: "Test Recipe",
+    foods: foods,
+    steps: [{ text: "Step 1" }],
+  };
+
+  const response = await request(app)
+    .post("/api/recipes")
+    .send(recipeToSend)
+    .set("Authorization", "Bearer " + testToken);
+
+  const weekToSend = {
+    Friday: {
+      breakfast: new mongoose.Types.ObjectId(response._body.data._id),
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Monday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Saturday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Sunday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Thursday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Tuesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Wednesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+  };
+
+  const saveWeekResponse = await request(app)
+    .put("/api/weeks")
+    .send(weekToSend)
+    .set("Authorization", "Bearer " + testToken);
+  expect(saveWeekResponse.status).toBe(200);
+
+  const initialShoppingListResponse = await request(app)
+    .get("/api/shoppingList")
+    .set("Authorization", "Bearer " + testToken);
+  expect(initialShoppingListResponse.status).toBe(200);
+  const initialShoppingList =
+    initialShoppingListResponse.body.shoppingList.weeklyTotal;
+  const initialLomoItem = initialShoppingList.find(
+    (item) => item.foodId.name === "Lomo"
+  );
+  expect(initialLomoItem.quantityToBuy).toBe(0);
+  const foodToUpdate = foods[0];
+  const updatePayload = {
+    foodId: {
+      foodId: { _id: new mongoose.Types.ObjectId(foodToUpdate.foodId) },
+      weightConsumed: foodToUpdate.weightConsumed,
+    },
+    quantityToBuy: 50,
+  };
+  const updateResponse = await request(app)
+    .put("/api/shoppingList")
+    .send(updatePayload)
+    .set("Authorization", "Bearer " + testToken);
+  expect(updateResponse.status).toBe(200);
+
+  // Obtener la lista de compras después de la actualización
+  const updatedShoppingListResponse = await request(app)
+    .get("/api/shoppingList")
+    .set("Authorization", "Bearer " + testToken);
+  expect(updatedShoppingListResponse.status).toBe(200);
+
+  const updatedShoppingList =
+    updatedShoppingListResponse.body.shoppingList.weeklyTotal;
+  const updatedLomoItem = updatedShoppingList.find(
+    (item) => item.foodId.name === "Lomo"
+  );
+  expect(updatedLomoItem.quantityToBuy).toBe(50);
 });

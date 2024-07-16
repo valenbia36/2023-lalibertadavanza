@@ -2,26 +2,10 @@ const { shoppingListModel } = require("../models");
 const { eventNames } = require("../models/users");
 const { handleHttpError } = require("../utils/handleErrors");
 
-const createShoppingList = async (req, res) => {
-  try {
-    const user = req.userId;
-    const shoppingList = new shoppingListModel({
-      user,
-      weeklyTotal: req.body.weeklyTotal,
-    });
-    await shoppingList.save();
-    res.status(200).json(shoppingList);
-    res.send({ data });
-  } catch (e) {
-    handleHttpError(res, "ERROR_CREATE_RECIPE", 500);
-  }
-};
 const getShoppingList = async (req, res) => {
   try {
-    // Obtén el userId del request (puede que necesites ajustar cómo obtienes el userId)
     const user = req.userId;
 
-    // Encuentra la lista de compras para el usuario específico
     const shoppingList = await shoppingListModel
       .findOne({ user })
       .populate({
@@ -54,11 +38,9 @@ const updateShoppingList = async (req, res) => {
         populate: "foodId",
       })
       .exec();
-
     if (!shoppingList) {
       return res.status(404).json({ message: "Shopping list not found" });
     }
-
     // Encuentra el índice del elemento en weeklyTotal que coincide con foodId
     const itemIndex = shoppingList.weeklyTotal.findIndex(
       (item) => item.foodId._id.toString() === foodId.foodId._id.toString()
@@ -73,8 +55,6 @@ const updateShoppingList = async (req, res) => {
     const item = shoppingList.weeklyTotal[itemIndex];
     const currentQuantityToBuy = parseFloat(item.quantityToBuy) || 0;
     const newQuantityToBuy = currentQuantityToBuy + parseFloat(quantityToBuy);
-    console.log(newQuantityToBuy);
-    console.log(item.weightConsumed);
     // Verifica que la nueva cantidad no exceda el weightConsumed
     if (newQuantityToBuy > item.weightConsumed) {
       return res
@@ -96,4 +76,4 @@ const updateShoppingList = async (req, res) => {
     handleHttpError(res, "ERROR_UPDATE_SHOPPING_LIST", 500);
   }
 };
-module.exports = { createShoppingList, getShoppingList, updateShoppingList };
+module.exports = { getShoppingList, updateShoppingList };

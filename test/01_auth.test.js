@@ -52,8 +52,8 @@ test("User cant update his user with a random token", async () => {
       password: "newPassword",
     })
     .set("Authorization", "Bearer " + "token123");
-  expect(response.status).toEqual(401);
-  expect(response._body.message).toEqual("Failed to authenticate token");
+  expect(response.status).toEqual(403);
+  expect(response._body.message).toEqual("ERROR_VALIDATE_TOKEN");
 });
 
 test("User cant update his user with an invalid token format", async () => {
@@ -64,7 +64,7 @@ test("User cant update his user with an invalid token format", async () => {
     })
     .set("Authorization", "Bearer " + "");
   expect(response.status).toEqual(403);
-  expect(response._body.message).toEqual("Invalid token format");
+  expect(response._body.message).toEqual("ERROR_VALIDATE_TOKEN");
 });
 
 //Este tambien devuelve 200
@@ -75,7 +75,7 @@ test("User cant update his user without a token", async () => {
       password: "newPassword",
     });
   expect(response.status).toEqual(403);
-  expect(response._body.message).toEqual("Token not provided");
+  expect(response._body.message).toEqual("ERROR_VALIDATE_TOKEN");
 });
 
 test("User cant sign-in in an unexsiting account", async () => {
@@ -128,8 +128,8 @@ test("A user sign up, update his password with a token, and then login with the 
     .put("/api/auth/users/updatePassword/")
     .send({
       password: "newPassword",
-    })
-    .set("Authorization", "Bearer " + response1._body.token);
+      secretToken: response1._body.token,
+    });
   expect(response2.statusCode).toEqual(200);
 
   const response3 = await request(app).post("/api/auth/login").send({

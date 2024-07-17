@@ -76,26 +76,40 @@ const getUserByEmail = async (req, res) => {
 
 const updateUserPassword = async (req, res) => {
   try {
-    //Problema gigante, la token se valida en el front, NUNCA EN EL BACK
-    const validateToken = await usersModel.findOne({
-      secretToken: req.body.token,
-    });
-    if (!validateToken) {
-      handleHttpError(res, "ERROR_VALIDATE_TOKEN", 403);
-    }
-    const userId = req.body._id;
-    const newPassword = req.body.password;
-    const password = await encrypt(newPassword);
+    const { token, _id: userId, password: newPassword } = req.body;
 
+    // Verificar si el token está presente en la solicitud
+    if (!token) {
+      return handleHttpError(res, "TOKEN_IS_REQUIRED", 400);
+    }
+
+    // Validar el token en el backend
+    const validateToken = await usersModel.findOne({ secretToken: token });
+    
+    if (!validateToken) {
+      return handleHttpError(res, "ERROR_VALIDATE_TOKEN", 403);
+    }
+
+    // Encriptar la nueva contraseña
+    const encryptedPassword = await encrypt(newPassword);
+
+    // Actualizar la contraseña del usuario
     const data = await usersModel.findOneAndUpdate(
       { _id: userId },
-      { password: password }
+      { password: encryptedPassword }
     );
-    res.status(200).send({ message: "PASSWORD_UPDATE_SUCCESFULL" });
+
+    // Verificar si la actualización fue exitosa
+    if (!data) {
+      return handleHttpError(res, "USER_NOT_FOUND", 404);
+    }
+
+    res.status(200).send({ message: "PASSWORD_UPDATE_SUCCESSFUL" });
   } catch (e) {
     handleHttpError(res, "ERROR_UPDATE_USER_PASSWORD", 500);
   }
 };
+
 
 const updateUser = async (req, res) => {
   try {

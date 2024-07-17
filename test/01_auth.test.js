@@ -52,8 +52,8 @@ test("User cant update his user with a random token", async () => {
       password: "newPassword",
     })
     .set("Authorization", "Bearer " + "token123");
-  expect(response.status).toEqual(403);
-  expect(response._body.message).toEqual("ERROR_VALIDATE_TOKEN");
+  expect(response.status).toEqual(400);
+  expect(response._body.message).toEqual("TOKEN_IS_REQUIRED");
 });
 
 test("User cant update his user with an invalid token format", async () => {
@@ -63,8 +63,8 @@ test("User cant update his user with an invalid token format", async () => {
       password: "newPassword",
     })
     .set("Authorization", "Bearer " + "");
-  expect(response.status).toEqual(403);
-  expect(response._body.message).toEqual("ERROR_VALIDATE_TOKEN");
+  expect(response.status).toEqual(400);
+  expect(response._body.message).toEqual("TOKEN_IS_REQUIRED");
 });
 
 //Este tambien devuelve 200
@@ -74,8 +74,8 @@ test("User cant update his user without a token", async () => {
     .send({
       password: "newPassword",
     });
-  expect(response.status).toEqual(403);
-  expect(response._body.message).toEqual("ERROR_VALIDATE_TOKEN");
+  expect(response.status).toEqual(400);
+  expect(response._body.message).toEqual("TOKEN_IS_REQUIRED");
 });
 
 test("User cant sign-in in an unexsiting account", async () => {
@@ -107,7 +107,8 @@ test("User cant login with an incorrect password and gets an error", async () =>
 });
 
 test("A user sign up, update his password with a token, and then login with the new password", async () => {
-  const response = await request(app).post("/api/auth/register").send({
+  // Registro de usuario
+  const registerResponse = await request(app).post("/api/auth/register").send({
     firstName: "test",
     lastName: "user",
     email: "testuser@gmail.com",
@@ -117,28 +118,36 @@ test("A user sign up, update his password with a token, and then login with the 
     height: "1.80",
     weight: "70",
   });
-  expect(response.statusCode).toEqual(200);
-  const response1 = await request(app).post("/api/auth/login").send({
-    // se logea para obtener token
+  expect(registerResponse.statusCode).toEqual(200);
+
+  // Login para obtener token y datos del usuario
+  const loginResponse = await request(app).post("/api/auth/login").send({
     email: "testuser@gmail.com",
     password: "testuser",
   });
-  expect(response.statusCode).toEqual(200);
-  const response2 = await request(app)
+  expect(loginResponse.statusCode).toEqual(200);
+
+  // Obtener el usuario desde la base de datos para extraer el secretToken
+  const user = await usersModel.findById({ _id: loginResponse.body.user._id });
+  const secretToken = user.secretToken; // Aquí obtenemos el secretToken real
+  console.log(`Secret Token: ${secretToken}`);
+
+  // Actualizar la contraseña del usuario usando el secretToken
+  const updatePasswordResponse = await request(app)
     .put("/api/auth/users/updatePassword/")
     .send({
       password: "newPassword",
-      secretToken: response1._body.token,
+      secretToken: secretToken, // Usamos el secretToken obtenido
     });
-  expect(response2.statusCode).toEqual(200);
+  expect(updatePasswordResponse.statusCode).toEqual(200);
 
-  const response3 = await request(app).post("/api/auth/login").send({
-    // se logea con la nuev contraseña
+  // Login con la nueva contraseña
+  const loginNewPasswordResponse = await request(app).post("/api/auth/login").send({
     email: "testuser@gmail.com",
     password: "newPassword",
   });
-
-  expect(response3.statusCode).toEqual(200);
+  expect(loginNewPasswordResponse.statusCode).toEqual(200);
+  console.log(loginNewPasswordResponse.body);
 });
 
 test("User sign up and then delete his account succesfull", async () => {

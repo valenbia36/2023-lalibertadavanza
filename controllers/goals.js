@@ -73,13 +73,8 @@ const getActiveGoalsByUserId = async (req, res) => {
 const calculateGoalStatus = async (goal) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const goalStartDate = new Date(goal.startDate);
-  goalStartDate.setHours(0, 0, 0, 0);
-
   const goalEndDate = new Date(goal.endDate);
-  goalEndDate.setHours(0, 0, 0, 0);
-
   if (today < goalStartDate) {
     return "Not started";
   } else if (today >= goalStartDate && today <= goalEndDate) {
@@ -190,7 +185,7 @@ const updateGoal = async (req, res) => {
       return handleHttpError(res, "Goal not found or unauthorized", 404);
     }
     const status = await calculateGoalStatus(goal);
-    if (status == "Expired" || status == "In progress") {
+    if (status == "Expired") {
       return handleHttpError(
         res,
         "Can't edit a goal that has started or it's expired",

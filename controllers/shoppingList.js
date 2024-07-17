@@ -76,4 +76,40 @@ const updateShoppingList = async (req, res) => {
     handleHttpError(res, "ERROR_UPDATE_SHOPPING_LIST", 500);
   }
 };
-module.exports = { getShoppingList, updateShoppingList };
+
+const resetQuantitiesToBuy = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    // Encuentra la lista de compras del usuario
+    const shoppingList = await shoppingListModel
+      .findOne({ user: userId })
+      .populate({
+        path: "weeklyTotal",
+        populate: "foodId",
+      })
+      .exec();
+
+    if (!shoppingList) {
+      return res.status(404).json({ message: "Shopping list not found" });
+    }
+
+    // Reinicia la cantidad a comprar de todos los elementos en weeklyTotal
+    shoppingList.weeklyTotal.forEach((item) => {
+      item.quantityToBuy = 0;
+    });
+
+    // Guarda los cambios en la base de datos
+    await shoppingList.save();
+
+    res.status(200).json({
+      message: "Quantities to buy reset successfully",
+      shoppingList,
+    });
+  } catch (e) {
+    console.error("Error resetting quantities to buy:", e);
+    handleHttpError(res, "ERROR_RESET_QUANTITIES_TO_BUY", 500);
+  }
+};
+
+module.exports = { getShoppingList, updateShoppingList, resetQuantitiesToBuy };

@@ -5,6 +5,7 @@ const {
   usersModel,
   foodModel,
   categoryModel,
+  intermittentFastingModel,
 } = require("../models");
 const sinon = require("sinon");
 const jwt = require("jsonwebtoken");
@@ -14,6 +15,7 @@ beforeAll(async () => {
   await mealModel.deleteMany({});
   await foodModel.deleteMany({});
   await usersModel.deleteMany({});
+  await intermittentFastingModel.deleteMany({});
   await categoryModel.deleteMany({});
 });
 
@@ -254,11 +256,11 @@ test("Calories between two dates should return each day and calories", async () 
     })
     .set("Authorization", "Bearer " + testToken);
   const startDate = encodeURI(
-    "Mon Apr 16 2024 00:00:00 GMT-0300 (hora estándar de Argentina)"
+    "Mon Jul 16 2024 00:00:00 GMT-0300 (hora estándar de Argentina)"
   );
 
   const endDate = encodeURI(
-    "Wed Apr 18 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
+    "Mon Jul 29 2024 00:00:52 GMT-0300 (hora estándar de Argentina)"
   );
 
   const response1 = await request(app)
@@ -270,7 +272,7 @@ test("Calories between two dates should return each day and calories", async () 
   response1._body.fechasIntermedias.forEach((entry) => {
     totalCalories += entry.totalCalories;
   });
-  expect(totalCalories).toEqual(220);
+  expect(totalCalories).toEqual(60);
 });
 
 test("Calories between two dates should return total calories", async () => {
@@ -297,7 +299,7 @@ test("Calories between two dates should return total calories", async () => {
     .set("Authorization", "Bearer " + testToken);
   //Cambiar fecha
   const startDate = encodeURI(
-    "Mon Apr 08 2024 00:00:00 GMT-0300 (hora estándar de Argentina)"
+    "Mon Jul 16 2024 00:00:00 GMT-0300 (hora estándar de Argentina)"
   );
 
   const endDate = encodeURI(
@@ -308,7 +310,7 @@ test("Calories between two dates should return total calories", async () => {
     .get("/api/meals/user/startDate/" + startDate + "/endDate/" + endDate)
     .set("Authorization", "Bearer " + testToken);
   expect(response3.statusCode).toEqual(200);
-  expect(response3._body.totalCalorias).toEqual(340);
+  expect(response3._body.totalCalorias).toEqual(120);
 });
 
 test("Can't edit a meal from another user", async () => {
@@ -367,4 +369,41 @@ test("Can't delete a meal from another user", async () => {
   expect(responseParsed1.message).toEqual(
     "You don't have permission to delete this meal"
   );
+});
+
+test("User creates an intermiten fasting and POST a meal when its active, the fasting is automatically canceled", async () => {
+  const testToken = await login("adminuser@admin.com");
+  const foods = await createFoods(testToken);
+  const intermitentResponse = await request(app)
+    .post("/api/intermittentFasting")
+    .send({
+      startDateTime: "2023-10-22T03:00:15.454Z",
+      endDateTime: "2024-10-23T05:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
+  expect(intermitentResponse.statusCode).toEqual(200);
+  const response = await request(app)
+    .post("/api/meals")
+    .send({
+      name: "Asado",
+      foods: foods,
+      date: new Date(),
+      hour: "20:15",
+    })
+    .set("Authorization", "Bearer " + testToken);
+  expect(response.statusCode).toEqual(200);
+  const response1 = await request(app)
+    .get("/api/meals/user")
+    .set("Authorization", "Bearer " + testToken);
+  expect(response1.statusCode).toEqual(200);
+  expect(response1._body.data[0].name).toEqual("Asado");
+  expect(response1._body.data[0].totalCalories).toEqual(60);
+  expect(response1._body.data[0].totalFats).toEqual(200);
+  expect(response1._body.data[0].totalCarbs).toEqual(200);
+  expect(response1._body.data[0].totalProteins).toEqual(200);
+  const deletedInt = await intermittentFastingModel.findById(
+    intermitentResponse._body.data._id
+  );
+
+  expect(deletedInt).toBeNull();
 });

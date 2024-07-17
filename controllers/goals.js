@@ -161,7 +161,6 @@ const getGoalsByUserWithProgress = async (req, res) => {
 const createGoal = async (req, res) => {
   try {
     const userId = req.userId;
-    console.log(req.body);
     if (!userId) {
       return handleHttpError(res, "User ID not provided", 400);
     }

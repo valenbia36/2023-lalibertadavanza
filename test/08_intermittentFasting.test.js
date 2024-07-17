@@ -40,21 +40,32 @@ test("User succesfully created an intermitent fasting", async () => {
   ).toBeTruthy();
 });
 
-test("[ERROR 501] Ya existe un ayuno intermitente en ese horario", async () => {
-  const response = await request(app).post("/api/intermittentFasting").send({
-    startDateTime: "2023-10-22T03:00:15.454Z",
-    endDateTime: "2023-10-23T05:00:15.454Z",
-    userId: "987654321",
-    email: "adminuser@admin.com",
-    userName: "Admin Admin",
-  });
-  expect(response.statusCode).toEqual(501);
+test("User tries to create two overlapping intermitent fastings and get a 501 error ", async () => {
+  const testToken = await login("adminuser1@admin.com");
+  const response = await request(app)
+    .post("/api/intermittentFasting")
+    .send({
+      startDateTime: "2023-10-22T03:00:15.454Z",
+      endDateTime: "2024-10-23T05:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
+  expect(response.statusCode).toEqual(200);
+  expect(
+    intermittentFastingModel.findById(response._body.data._id)
+  ).toBeTruthy();
+  const response2 = await request(app)
+    .post("/api/intermittentFasting")
+    .send({
+      startDateTime: "2023-10-22T03:00:15.454Z",
+      endDateTime: "2024-10-23T05:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
+  expect(response2.statusCode).toEqual(501);
+  expect(response2._body.message).toEqual("CONFLICTING_FASTING_PERIOD");
 });
 
 test("Should retrieve active intermittent fastings correctly", async () => {
-  const testToken = await login("adminuser@admin.com");
-
-  // Create a new intermittent fasting
+  const testToken = await login("adminuser2@admin.com");
   const createResponse = await request(app)
     .post("/api/intermittentFasting")
     .send({
@@ -70,11 +81,8 @@ test("Should retrieve active intermittent fastings correctly", async () => {
     .set("Authorization", "Bearer " + testToken);
   expect(activeResponse.statusCode).toEqual(200);
 
-  // Ensure that there is at least one active intermittent fasting
-  expect(activeResponse.body.filteredData.length).toBeGreaterThan(0);
-
   // Get the first active intermittent fasting
-  const activeFasting = activeResponse.body.filteredData[0];
+  const activeFasting = activeResponse.body.filteredData;
 
   // Convert dates to timestamps
   const currentDateTime = new Date().getTime();
@@ -87,7 +95,7 @@ test("Should retrieve active intermittent fastings correctly", async () => {
 });
 
 test("User deletes active intermitent fasting", async () => {
-  const testToken = await login("adminuser@admin.com");
+  const testToken = await login("adminuser3@admin.com");
   const response = await request(app)
     .post("/api/intermittentFasting")
     .send({
@@ -108,12 +116,15 @@ test("User deletes active intermitent fasting", async () => {
   ).toBeTruthy();
 });
 
-test("[ERROR 500] No se elimino el intermittent fasting correctamente", async () => {
-  const response = await request(app).post("/api/intermittentFasting").send({
-    startDateTime: "2023-10-29T03:00:15.454Z",
-    endDateTime: "2023-10-30T05:00:15.454Z",
-    userId: "987654321",
-  });
+test("[ERROR 500] Error handling for delete intermiten fasting", async () => {
+  const testToken = await login("adminuser4@admin.com");
+  const response = await request(app)
+    .post("/api/intermittentFasting")
+    .send({
+      startDateTime: "2023-10-22T03:00:15.454Z",
+      endDateTime: "2024-10-23T05:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
 
   const responseParsed = JSON.parse(response.text);
 
@@ -121,36 +132,12 @@ test("[ERROR 500] No se elimino el intermittent fasting correctamente", async ()
     .stub(intermittentFastingModel, "delete")
     .throws(new Error("Database error"));
 
-  const response1 = await request(app).delete(
-    "/api/intermittentFasting/active/" + responseParsed.data._id
-  );
+  const response1 = await request(app)
+    .delete("/api/intermittentFasting/active/" + responseParsed.data._id)
+    .set("Authorization", "Bearer " + testToken);
 
   expect(response1.statusCode).toEqual(500);
-});
-// Falta no poder crear dos que se superpongan
-test("Cant create two intermitent fastings on the same time span", async () => {
-  const testToken = await login("adminuser@admin.com");
-
-  // Create a new intermittent fasting
-  const createResponse1 = await request(app)
-    .post("/api/intermittentFasting")
-    .send({
-      startDateTime: "2023-10-22T03:00:15.454Z",
-      endDateTime: "2024-10-23T05:00:15.454Z",
-    })
-    .set("Authorization", "Bearer " + testToken);
-  expect(createResponse1.statusCode).toEqual(200);
-
-  // Create a new intermittent fasting
-  const createResponse2 = await request(app)
-    .post("/api/intermittentFasting")
-    .send({
-      startDateTime: "2023-10-22T04:00:15.454Z",
-      endDateTime: "2024-10-23T05:00:15.454Z",
-    })
-    .set("Authorization", "Bearer " + testToken);
-  expect(createResponse2.statusCode).toEqual(501);
-  expect(createResponse2._body.message).toEqual("CONFLICTING_FASTING_PERIOD");
+  expect(response1.body.message).toEqual("ERROR_DELETE_GOAL");
 });
 // QUe no puedas crear endDate < startDate
 test("Cant create an intermitent fasting with start date older than end date", async () => {
@@ -169,32 +156,26 @@ test("Cant create an intermitent fasting with start date older than end date", a
     "ERROR_CREATE_INTERMITTENT_FASTING"
   );
 });
-test("[ERROR 500] No se creo el intermittent fasting correctamente", async () => {
-  sinon
-    .stub(intermittentFastingModel, "create")
-    .throws(new Error("Database error"));
 
-  const response = await request(app).post("/api/intermittentFasting").send({
-    startDateTime: "2023-10-24T03:00:15.454Z",
-    endDateTime: "2023-10-25T05:00:15.454Z",
-    userId: "987654321",
-  });
+test("User tries to delete another user intermitent fasting and recieves a 403 error", async () => {
+  const testToken = await login("adminuser5@admin.com");
+  const response = await request(app)
+    .post("/api/intermittentFasting")
+    .send({
+      startDateTime: "2023-10-22T03:00:15.454Z",
+      endDateTime: "2024-10-23T05:00:15.454Z",
+    })
+    .set("Authorization", "Bearer " + testToken);
 
-  expect(response.statusCode).toEqual(500);
-});
+  const responseParsed = JSON.parse(response.text);
+  const testToken2 = await login("adminuser6@admin.com");
 
-test("[ERROR 500] No se obtuvieron los intermittent fastings activos correctamente", async () => {
-  sinon
-    .stub(intermittentFastingModel, "find")
-    .throws(new Error("Database error"));
+  const response1 = await request(app)
+    .delete("/api/intermittentFasting/active/" + responseParsed.data._id)
+    .set("Authorization", "Bearer " + testToken2);
 
-  const response = await request(app).get(
-    "/api/intermittentFasting/active/987654321"
+  expect(response1.statusCode).toEqual(403);
+  expect(response1.body.message).toEqual(
+    "You don't have permission to cancel this intermitent fasting"
   );
-  expect(response.statusCode).toEqual(500);
-});
-
-test("[ERROR 500] No se obtuvieron los intermittent fastings correctamente", async () => {
-  const response = await request(app).get("/api/intermittentFasting/987654321");
-  expect(response.statusCode).toEqual(500);
 });

@@ -62,9 +62,8 @@ test("Se obtuvieron los water glass for user id by day correctamente. ", async (
   const response1 = await request(app)
     .get("/api/waterGlass/countByDay/")
     .set("Authorization", "Bearer " + testToken);
-  //falta ordenar la response para el grafico
-  expect(response1._body.groupedResults["2024-04-10"]).toEqual(2);
-  expect(response1._body.groupedResults["2024-04-11"]).toEqual(1);
+  expect(response1._body.data[0].count).toEqual(2);
+  expect(response1._body.data[1].count).toEqual(1);
 });
 
 test("Successfully retrieved water consumption records by user ID", async () => {
@@ -87,28 +86,3 @@ test("Successfully retrieved water consumption records by user ID", async () => 
   expect(responseData.data).toBeDefined();
   expect(responseData.data.length).toBeGreaterThanOrEqual(0);
 });
-
-/* test("[ERROR 500] No se creo el water glass correctamente", async () => {
-  const testToken = generateTestToken();
-  sinon.stub(waterGlassModel, "create").throws(new Error("Database error"));
-
-  const response = await request(app).post("/api/waterGlass").send({
-    startDate: "2023-10-22T03:00:15.454Z",
-  });
-  expect(response.statusCode).toEqual(500);
-}); */
-
-/* test("[ERROR 500] No se obtuvieron los water glass for user id by day correctamente", async () => {
-  const testToken = generateTestToken();
-  sinon.stub(waterGlassModel, "aggregate").throws(new Error("Database error"));
-  const response = await request(app).get(
-    "/api/waterGlass/countByDay/987654321"
-  );
-  expect(response.statusCode).toEqual(500);
-});
- */
-/* test("[ERROR 500] No se obtuvieron los water glass by user id correctamente", async () => {
-  sinon.stub(waterGlassModel, "find").throws(new Error("Database error"));
-  const response = await request(app).get("/api/waterGlass/987654321");
-  expect(response.statusCode).toEqual(500);
-}); */

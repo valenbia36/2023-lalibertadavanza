@@ -119,28 +119,6 @@ test("User cant create without a valid token", async () => {
   expect(response.body.message).toEqual("Failed to authenticate token");
 });
 
-test("User create a food succesfully", async () => {
-  const testToken = await generateToken();
-  const category = await createCategory("Verdura", testToken);
-  const foodToSend = {
-    name: "Rucula",
-    calories: 2,
-    weight: 10,
-    category: category,
-    carbs: 0,
-    proteins: 0,
-    fats: 0,
-  };
-  const response = await request(app)
-    .post("/api/foods")
-    .send(foodToSend)
-    .set("Authorization", "Bearer " + testToken);
-  expect(response.statusCode).toEqual(200);
-  const foodId = response._body.data._id;
-  const food = await foodModel.findById(foodId);
-  expect(food).toBeTruthy(); // que es tobetruthy?
-  expect(food.name).toEqual("Rucula");
-});
 test("User create a foods and gets it successfully", async () => {
   const testToken = await generateToken();
   const category = await createCategory("Carne", testToken);

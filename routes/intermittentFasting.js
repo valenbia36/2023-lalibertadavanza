@@ -15,12 +15,6 @@ router.post(
   extractUserIdMiddleware,
   createIntermittentFasting
 );
-/* router.get(
-  "/",
-  verifyToken,
-  extractUserIdMiddleware,
-  getIntermittentFastingByUserId
-); */
 router.get(
   "/next",
   verifyToken,

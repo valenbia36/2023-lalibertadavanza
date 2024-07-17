@@ -76,7 +76,7 @@ const getUserByEmail = async (req, res) => {
 
 const updateUserPassword = async (req, res) => {
   try {
-    const { token, _id: userId, password: newPassword } = req.body;
+    const { secretToken: token, _id: userId, password: newPassword } = req.body;
 
     // Verificar si el token está presente en la solicitud
     if (!token) {
@@ -85,7 +85,7 @@ const updateUserPassword = async (req, res) => {
 
     // Validar el token en el backend
     const validateToken = await usersModel.findOne({ secretToken: token });
-    
+
     if (!validateToken) {
       return handleHttpError(res, "ERROR_VALIDATE_TOKEN", 403);
     }
@@ -109,7 +109,6 @@ const updateUserPassword = async (req, res) => {
     handleHttpError(res, "ERROR_UPDATE_USER_PASSWORD", 500);
   }
 };
-
 
 const updateUser = async (req, res) => {
   try {

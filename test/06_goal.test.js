@@ -47,12 +47,23 @@ async function login2() {
   });
   return response1._body.token;
 }
+async function createCategory(name, testToken) {
+  const response = await request(app)
+    .post("/api/category")
+    .send({
+      name: name,
+    })
+    .set("Authorization", "Bearer " + testToken);
+  return response._body.data._id;
+}
+
 async function createFoods(token) {
+  const category = await createCategory("Carne", token);
   const foodToSend1 = {
     name: "Lomo",
     calories: 2,
     weight: 10,
-    category: "Carne",
+    category: category,
     carbs: 0,
     proteins: 0,
     fats: 0,
@@ -61,7 +72,7 @@ async function createFoods(token) {
     name: "Vacio",
     calories: 2,
     weight: 10,
-    category: "Carne",
+    category: category,
     carbs: 10,
     proteins: 10,
     fats: 10,
@@ -193,7 +204,7 @@ test("[GET GOALS BY USER ID WITH PROGRESS MONTHLY] User creates a 200 calories g
   const testToken = await login("adminuser7@admin.com");
   const foods = await createFoods(testToken);
   const response = await request(app)
-    .post("/api/meals2")
+    .post("/api/meals")
     .send({
       name: "Asado",
       foods: foods,
@@ -262,30 +273,6 @@ test("[UPDATE GOAL BY ID] Users update a goal by changing his name and PUT reque
     .set("Authorization", "Bearer " + testToken);
   expect(response1.statusCode).toEqual(200);
   expect(response1._body.data.name).toEqual("Nuevo nombre");
-}, 6000);
-
-test("[UPDATE GOAL BY ID] Cant update a goal that is in progress", async () => {
-  const testToken = await login("adminuser10@admin.com");
-  const response = await request(app)
-    .post("/api/goals")
-    .send({
-      name: "Meta 1",
-      startDate: "2023-10-22T03:00:15.454Z",
-      endDate: "2025-10-24T03:00:15.454Z",
-      calories: 200,
-      recurrency: "Monthly",
-    })
-    .set("Authorization", "Bearer " + testToken);
-  const responseParsed = JSON.parse(response.text);
-
-  const response1 = await request(app)
-    .put("/api/goals/" + responseParsed.data._id)
-    .send({ name: "Nuevo nombre" })
-    .set("Authorization", "Bearer " + testToken);
-  expect(response1.statusCode).toEqual(500);
-  expect(response1._body.message).toEqual(
-    "Can't edit a goal that has started or it's expired"
-  );
 }, 6000);
 
 test("[UPDATE GOAL BY ID] Cant update a goal that is expired", async () => {

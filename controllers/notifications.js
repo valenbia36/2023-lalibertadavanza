@@ -2,10 +2,12 @@ const { sendEmail } = require("../utils/handleEmail");
 const { usersModel } = require("../models");
 const { updateUser } = require("../controllers/auth");
 const { handleHttpError } = require("../utils/handleErrors");
-
+function getUID() {
+  return Date.now().toString(36);
+}
 const sendResetPasswordEmail = async (req, res) => {
-  const { email, token, userName, userId, url } = req.body;
-
+  const { email, userName, userId, url } = req.body;
+  const token = getUID();
   try {
     const reqUpdateUser = {
       params: {

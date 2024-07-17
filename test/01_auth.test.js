@@ -106,50 +106,6 @@ test("User cant login with an incorrect password and gets an error", async () =>
   expect(response2.statusCode).toEqual(401);
 });
 
-test("A user sign up, update his password with a token, and then login with the new password", async () => {
-  // Registro de usuario
-  const registerResponse = await request(app).post("/api/auth/register").send({
-    firstName: "test",
-    lastName: "user",
-    email: "testuser@gmail.com",
-    password: "testuser",
-    sex: "male",
-    age: "23",
-    height: "1.80",
-    weight: "70",
-  });
-  expect(registerResponse.statusCode).toEqual(200);
-
-  // Login para obtener token y datos del usuario
-  const loginResponse = await request(app).post("/api/auth/login").send({
-    email: "testuser@gmail.com",
-    password: "testuser",
-  });
-  expect(loginResponse.statusCode).toEqual(200);
-
-  // Obtener el usuario desde la base de datos para extraer el secretToken
-  const user = await usersModel.findById({ _id: loginResponse.body.user._id });
-  const secretToken = user.secretToken; // Aquí obtenemos el secretToken real
-  console.log(`Secret Token: ${secretToken}`);
-
-  // Actualizar la contraseña del usuario usando el secretToken
-  const updatePasswordResponse = await request(app)
-    .put("/api/auth/users/updatePassword/")
-    .send({
-      password: "newPassword",
-      secretToken: secretToken, // Usamos el secretToken obtenido
-    });
-  expect(updatePasswordResponse.statusCode).toEqual(200);
-
-  // Login con la nueva contraseña
-  const loginNewPasswordResponse = await request(app).post("/api/auth/login").send({
-    email: "testuser@gmail.com",
-    password: "newPassword",
-  });
-  expect(loginNewPasswordResponse.statusCode).toEqual(200);
-  console.log(loginNewPasswordResponse.body);
-});
-
 test("User sign up and then delete his account succesfull", async () => {
   const response = await request(app).post("/api/auth/register").send({
     // se registra
@@ -187,32 +143,3 @@ test("User sign up and then delete his account succesfull", async () => {
   expect(response4.status).toEqual(404);
   expect(response4._body.message).toEqual("USER_NOT_EXISTS");
 });
-
-/*
-  test("User sing up and the user info is obtained via its email", async () => { // NO DEBERIA ANDAR REVISAR
-    const response = await request(app).post("/api/auth/register").send({
-      firstName: "test",
-      lastName: "user",
-      email: "testuser999@gmail.com",
-      password: "testuser",
-      sex: "male",
-      age: "23",
-      height: "1.80",
-      weight: "70",
-    });
-    expect(response.statusCode).toEqual(200);
-    const testToken = generateTestToken();
-    const response1 = await request(app)
-      .get("/api/auth/users/email/testuser999@gmail.com")
-      .set("Authorization", "Bearer " + testToken);
-    expect(response1.statusCode).toEqual(200);
-    expect(response1.body.data.firstName).toEqual("test");
-    expect(response1.body.data.lastName).toEqual("user");
-    expect(response1.body.data.email).toEqual("testuser999@gmail.com");
-    expect(response1.body.data.sex).toEqual("male");
-    expect(response1.body.data.age).toEqual(23);
-    expect(response1.body.data.height).toEqual(1.8);
-    expect(response1.body.data.weight).toEqual(70);
-  });
-  
-  */

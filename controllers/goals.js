@@ -176,6 +176,13 @@ const updateGoal = async (req, res) => {
   try {
     const userId = req.userId;
     const goalId = req.params.goalId;
+    const info = {
+      name: req.body.name,
+      calories: req.body.calories,
+      startDate: req.body.startDate,
+      endDate: req.body.endDate,
+      recurrency: req.body.recurrency,
+    };
 
     // Primero, verificamos si el objetivo pertenece al usuario actual
     const goal = await goalModel.findOne({ _id: goalId, userId: userId });
@@ -183,7 +190,7 @@ const updateGoal = async (req, res) => {
       return handleHttpError(res, "Goal not found or unauthorized", 404);
     }
     const status = await calculateGoalStatus(goal);
-    if (status == "Expired") {
+    if (status == "Expired" || status == "In progress") {
       return handleHttpError(
         res,
         "Can't edit a goal that has started or it's expired",
@@ -193,7 +200,7 @@ const updateGoal = async (req, res) => {
     // Si el objetivo pertenece al usuario, procedemos a actualizarlo
     const updatedGoal = await goalModel.findOneAndUpdate(
       { _id: goalId },
-      req.body,
+      info,
       { new: true }
     );
     res.send({ data: updatedGoal });

@@ -65,6 +65,11 @@ const addRateToRecipe = async (req, res) => {
 };
 const updateRecipeById = async (req, res) => {
   try {
+    const info = {
+      steps: req.body.steps,
+      name: req.body.name,
+      foods: req.body.foods,
+    };
     const recipe = await recipeModel.findById({ _id: req.params.id });
     if (req.userId != recipe.creator.toString()) {
       return handleHttpError(res, "UNAUTHORIZED", 403);
@@ -78,7 +83,7 @@ const updateRecipeById = async (req, res) => {
 
     const data = await recipeModel.findOneAndUpdate(
       { _id: req.params.id },
-      req.body,
+      info,
       { new: true }
     );
     res.send({ data });

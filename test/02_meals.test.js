@@ -96,7 +96,6 @@ async function createFoods(token) {
     .post("/api/foods")
     .send(foodToSend2)
     .set("Authorization", "Bearer " + token);
-  //console.log(response1._body);
   let foods = [
     { foodId: response._body.data._id, weightConsumed: 100 },
     { foodId: response1._body.data._id, weightConsumed: 200 },
@@ -156,7 +155,7 @@ test("Deleting a meal successfully should result in a 200 status code and is not
       hour: "20:15",
     })
     .set("Authorization", "Bearer " + testToken);
-  //console.log(response._body.data);
+
   const mealId = response._body.data._id;
   const mealBeforeDelete = await mealModel.findById(mealId);
   expect(mealBeforeDelete).toBeTruthy();

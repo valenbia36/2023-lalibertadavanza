@@ -1,5 +1,4 @@
-const { recipeModel, foodModel } = require("../models");
-const { eventNames } = require("../models/users");
+const { recipeModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
 
 const createRecipe = async (req, res) => {
@@ -50,9 +49,6 @@ const addRateToRecipe = async (req, res) => {
       return handleHttpError(res, "ERROR_ALREADY_RATED", 401);
     }
 
-    /* if (!Array.isArray(data.ratings)) {
-      data.ratings = [];
-    } */
     // Agregar la calificacion junto con el ID del usuario
     data.ratings.push({ rate: req.body.rate, userId: req.userId });
 

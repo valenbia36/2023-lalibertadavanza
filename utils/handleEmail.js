@@ -24,7 +24,6 @@ const sendEmail = async (subject, message, send_to, sent_from, reply_to) => {
 
     // Send Email
     const info = await transporter.sendMail(options);
-    console.log("Email sent: " + info.response);
   } catch (error) {
     console.error("Error in sendEmail:", error);
     throw error; // rethrow the error to be handled by the caller

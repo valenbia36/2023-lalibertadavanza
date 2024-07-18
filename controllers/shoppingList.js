@@ -1,5 +1,4 @@
 const { shoppingListModel } = require("../models");
-const { eventNames } = require("../models/users");
 const { handleHttpError } = require("../utils/handleErrors");
 
 const getShoppingList = async (req, res) => {

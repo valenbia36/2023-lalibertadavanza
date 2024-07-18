@@ -1,16 +1,7 @@
-const { mealModel, foodModel, intermittentFastingModel } = require("../models");
+const { mealModel, intermittentFastingModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
 const jwt = require("jsonwebtoken");
 
-/* const getMeals = async (req, res) => {
-  try {
-    const user = req.user;
-    const data = await mealModel.find({});
-    res.send({ data, user });
-  } catch (e) {
-    handleHttpError(res, "ERROR_GET_MEALS", 500);
-  }
-}; */
 async function getActiveIntermittentFastingByUserId(userId) {
   try {
     const data = await intermittentFastingModel.find({
@@ -86,10 +77,6 @@ const getMealsByUserId = async (req, res) => {
         path: "foods.foodId",
       })
       .exec();
-
-    /*   data.forEach((meal) => {
-      console.log(meal);
-    }); */
 
     const meals = data.map((meal) => meal.toJSON());
     const mealsToSend = meals.map((meal) =>

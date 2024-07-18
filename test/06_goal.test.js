@@ -85,7 +85,6 @@ async function createFoods(token) {
     .post("/api/foods")
     .send(foodToSend2)
     .set("Authorization", "Bearer " + token);
-  //console.log(response1._body);
   let foods = [
     { foodId: response._body.data._id, weightConsumed: 100 },
     { foodId: response1._body.data._id, weightConsumed: 200 },

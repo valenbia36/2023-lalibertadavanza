@@ -59,7 +59,7 @@ const sendResetPasswordEmail = async (req, res) => {
       res.status(500).json({ error: "Failed to update user token" });
     }
   } catch (error) {
-    console.error(error); // Agregar registro del error
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };

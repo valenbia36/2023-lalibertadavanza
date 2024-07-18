@@ -127,7 +127,7 @@ const updateUser = async (req, res) => {
       .status(200)
       .send({ message: "USER_UPDATE_SUCCESFULL", user: updatedUser });
   } catch (e) {
-    console.error(e); // Agregar registro del error
+    console.error(e);
     handleHttpError(res, "ERROR_UPDATE_USER", 500);
   }
 };

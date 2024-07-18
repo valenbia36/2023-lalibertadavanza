@@ -5,8 +5,6 @@ const {
   usersModel,
   foodModel,
   categoryModel,
-  shoppingListModel,
-  weekModel,
 } = require("../models");
 const mongoose = require("mongoose");
 const sinon = require("sinon");
@@ -75,7 +73,6 @@ async function createFoods(token) {
     .post("/api/foods")
     .send(foodToSend2)
     .set("Authorization", "Bearer " + token);
-  //console.log(response1._body);
   let foods = [
     { foodId: response._body.data._id, weightConsumed: 100 },
     { foodId: response1._body.data._id, weightConsumed: 200 },
@@ -269,4 +266,123 @@ test("Updating a shopping list with the amount of a food that was purchased", as
     (item) => item.foodId.name === "Lomo"
   );
   expect(updatedLomoItem.quantityToBuy).toBe(50);
+});
+
+test("An user creates a shopping list,updates quantity to buy and resets its quantities to 0", async () => {
+  const testToken = await login("adminuser2@admin.com");
+  const foods = await createFoods(testToken);
+
+  const recipeToSend = {
+    name: "Test Recipe",
+    foods: foods,
+    steps: [{ text: "Step 1" }],
+  };
+
+  const response = await request(app)
+    .post("/api/recipes")
+    .send(recipeToSend)
+    .set("Authorization", "Bearer " + testToken);
+
+  const weekToSend = {
+    Friday: {
+      breakfast: new mongoose.Types.ObjectId(response._body.data._id),
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Monday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Saturday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Sunday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Thursday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Tuesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+    Wednesday: {
+      breakfast: null,
+      lunch: null,
+      snack: null,
+      dinner: null,
+    },
+  };
+
+  const saveWeekResponse = await request(app)
+    .put("/api/weeks")
+    .send(weekToSend)
+    .set("Authorization", "Bearer " + testToken);
+  expect(saveWeekResponse.status).toBe(200);
+
+  const shoppingListResponse = await request(app)
+    .get("/api/shoppingList")
+    .set("Authorization", "Bearer " + testToken);
+  expect(shoppingListResponse.status).toBe(200);
+  expect(shoppingListResponse.body.shoppingList.weeklyTotal.length).toEqual(2);
+  const lomoItem = shoppingListResponse.body.shoppingList.weeklyTotal.find(
+    (item) => item.foodId.name === "Lomo"
+  );
+  const vacioItem = shoppingListResponse.body.shoppingList.weeklyTotal.find(
+    (item) => item.foodId.name === "Vacio"
+  );
+  expect(lomoItem).toBeDefined();
+  expect(lomoItem.weightConsumed).toBe(100);
+  expect(lomoItem.quantityToBuy).toBe(0);
+
+  expect(vacioItem).toBeDefined();
+  expect(vacioItem.weightConsumed).toBe(200);
+  expect(vacioItem.quantityToBuy).toBe(0);
+  const foodToUpdate = foods[0];
+  const updatePayload = {
+    foodId: {
+      foodId: { _id: new mongoose.Types.ObjectId(foodToUpdate.foodId) },
+      weightConsumed: foodToUpdate.weightConsumed,
+    },
+    quantityToBuy: 50,
+  };
+  const updateResponse = await request(app)
+    .put("/api/shoppingList")
+    .send(updatePayload)
+    .set("Authorization", "Bearer " + testToken);
+  expect(updateResponse.status).toBe(200);
+  expect(
+    updateResponse._body.shoppingList.weeklyTotal[0].quantityToBuy
+  ).toEqual(50);
+  const shoppingListReset = await request(app)
+    .put("/api/shoppingList/reset")
+    .set("Authorization", "Bearer " + testToken);
+  expect(shoppingListReset.status).toBe(200);
+  const newLomoItem = shoppingListReset.body.shoppingList.weeklyTotal.find(
+    (item) => item.foodId.name === "Lomo"
+  );
+  const newVacioItem = shoppingListReset.body.shoppingList.weeklyTotal.find(
+    (item) => item.foodId.name === "Vacio"
+  );
+  expect(newLomoItem).toBeDefined();
+  expect(newLomoItem.weightConsumed).toBe(100);
+  expect(newLomoItem.quantityToBuy).toBe(0);
+
+  expect(newVacioItem).toBeDefined();
+  expect(newVacioItem.weightConsumed).toBe(200);
+  expect(newVacioItem.quantityToBuy).toBe(0);
 });

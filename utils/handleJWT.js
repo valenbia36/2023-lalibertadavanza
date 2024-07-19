@@ -5,23 +5,15 @@ const tokenSign = async (user) => {
   const sign = await jsonWT.sign(
     {
       _id: user._id,
-      role: user.role,
     },
     JWT_SECRET,
     {
-      expiresIn: "1h",
+      expiresIn: "10s",
     }
   );
   return sign;
 };
 
-/* onst verifyToken = async (tokenJWT) => {
-  try {
-    return jsonWT.verify(tokenJWT, JWT_SECRET);
-  } catch (e) {
-    return res.status(403).json({ message: "Token not provided" });
-  }
-}; */
 function verifyToken(req, res, next) {
   const authorizationHeader = req.headers["authorization"];
 

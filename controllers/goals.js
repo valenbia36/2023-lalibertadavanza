@@ -114,6 +114,7 @@ const getGoalsByUserWithProgress = async (req, res) => {
   try {
     const userId = req.userId;
     const goals = await goalModel.find({ userId: userId });
+
     const goalsWithProgress = await Promise.all(
       goals.map(async (item) => {
         const userId = item.userId;

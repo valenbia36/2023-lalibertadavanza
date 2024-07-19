@@ -26,7 +26,7 @@ const createIntermittentFasting = async (req, res) => {
     const data = await intermittentFastingModel.create(itFastingData);
     const endDateTime = new Date(req.body.endDateTime);
     schedule.scheduleJob(
-      endDateTime.setTime(endDateTime.getTime() - 60 * 60000),
+      endDateTime.setTime(endDateTime.getTime() + 2 * 3600000),
       () => {
         const reqUpdateUser = {
           body: {
@@ -101,12 +101,9 @@ const deleteActiveIntermittentFasting = async (req, res) => {
       _id: req.params.IntermittentFastingId,
     });
     if (!intFastToDelete || intFastToDelete.userId.toString() !== userId) {
-      return res
-        .status(403)
-        .json({
-          message:
-            "You don't have permission to cancel this intermitent fasting",
-        });
+      return res.status(403).json({
+        message: "You don't have permission to cancel this intermitent fasting",
+      });
     }
     const data = await intermittentFastingModel.delete({
       _id: req.params.IntermittentFastingId,

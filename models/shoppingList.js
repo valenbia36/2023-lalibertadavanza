@@ -17,10 +17,12 @@ const shoppingListSchema = new mongoose.Schema({
       weightConsumed: {
         type: Number,
         required: true,
+        max: 999999,
       },
       quantityToBuy: {
         type: Number,
         default: 0,
+        max: 999999,
       },
     },
   ],

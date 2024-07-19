@@ -54,6 +54,7 @@ const recipeSchema = new mongoose.Schema(
             min: [0],
             default: 0,
             required: true,
+            max: 999999,
           },
         },
       ],

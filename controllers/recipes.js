@@ -30,7 +30,7 @@ const getRecipe = async (req, res) => {
   try {
     const recipe = await recipeModel
       .find()
-      .populate("creador", "firstName lastName");
+      .populate("creator", "firstName lastName");
 
     res.status(200).json({ recipes });
   } catch (e) {

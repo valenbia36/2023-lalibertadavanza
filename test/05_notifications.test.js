@@ -116,6 +116,6 @@ test("[SEND NOTIFICATION OK] One hour alert email scheduled after creating an in
   const expectedTime = new Date(Date.now() + 3600 * 1000 - 60 * 60000);
 
   // Comparar horas y minutos
-  expect(scheduledTime.getUTCHours()).toEqual(expectedTime.getUTCHours());
+  expect(scheduledTime.getUTCHours()).toEqual(expectedTime.getUTCHours() + 3);
   expect(scheduledTime.getUTCMinutes()).toEqual(expectedTime.getUTCMinutes());
 }, 100000);

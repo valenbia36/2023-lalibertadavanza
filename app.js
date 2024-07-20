@@ -6,6 +6,9 @@ const bodyParser = require("body-parser");
 const app = express();
 
 const NODE_ENV = process.env.NODE_ENV || "development";
+if (process.env.TZ) {
+  process.env.TZ = process.env.TZ;
+}
 
 app.use(cors());
 app.use(express.json());

@@ -6,7 +6,6 @@ const createWaterGlass = async (req, res) => {
     const userId = req.userId;
     const data = await waterGlassModel.create({ ...req.body, userId: userId });
 
-    // Convertir el documento Mongoose a un objeto de JavaScript estándar
     const { userId: removedUserId, ...dataObject } = data.toObject();
 
     res.send({ data: dataObject });

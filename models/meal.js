@@ -5,10 +5,25 @@ const mealSchema = new mongoose.Schema(
   {
     name: {
       type: String,
+      required: true,
+      maxLength: 17,
     },
     foods: {
       type: [
-        { type: mongoose.Schema.Types.Mixed, ref: "food", required: true },
+        {
+          foodId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "foods",
+            required: true,
+          },
+          weightConsumed: {
+            type: Number,
+            min: [0],
+            default: 0,
+            required: true,
+            max: 999999,
+          },
+        },
       ],
       required: true,
       validate: {
@@ -20,32 +35,17 @@ const mealSchema = new mongoose.Schema(
     },
     date: {
       type: Date,
+      required: true,
     },
     hour: {
       type: String,
       match: /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/,
-    },
-    calories: {
-      type: Number,
-      min: [0],
-    },
-    carbs: {
-      type: Number,
-      min: [0],
-      default: 0,
-    },
-    proteins: {
-      type: Number,
-      min: [0],
-      default: 0,
-    },
-    fats: {
-      type: Number,
-      min: [0],
-      default: 0,
+      required: true,
     },
     userId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+      required: true,
     },
   },
   {

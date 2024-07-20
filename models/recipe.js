@@ -26,6 +26,8 @@ const ratingSchema = new mongoose.Schema({
   rate: {
     type: Number,
     required: true,
+    min: [1, "Minimum value must be 1."],
+    max: [5, "Maximum value must be 5"],
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -41,7 +43,20 @@ const recipeSchema = new mongoose.Schema(
     },
     foods: {
       type: [
-        { type: mongoose.Schema.Types.Mixed, ref: "food", required: true },
+        {
+          foodId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "foods",
+            required: true,
+          },
+          weightConsumed: {
+            type: Number,
+            min: [0],
+            default: 0,
+            required: true,
+            max: 999999,
+          },
+        },
       ],
       required: true,
       validate: {
@@ -68,7 +83,7 @@ const recipeSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Agrega campos de createdAt y updatedAt automáticamente
+    timestamps: true,
     versionKey: false,
   }
 );

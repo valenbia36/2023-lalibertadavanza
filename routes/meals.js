@@ -1,24 +1,45 @@
 const express = require("express");
 const router = express.Router();
+const { verifyToken } = require("../utils/handleJWT");
 const {
-  getMeals,
   createMeal,
   getMealsByUserId,
   getMealsByUserIdAndDate,
   updateMealById,
   deleteMealById,
   getCaloriesBetweenDays,
-  getCaloriesByDays
+  getCaloriesByDays,
 } = require("../controllers/meals");
 const { validatorCreateMeal } = require("../validators/meals");
+const extractUserIdMiddleware = require("../utils/handleUserID");
 
-router.get("/", getMeals);
-router.get("/user/:id", getMealsByUserId);
-router.get("/user/:id/date/:date", getMealsByUserIdAndDate);
-router.post("/", validatorCreateMeal, createMeal);
-router.put("/:id", updateMealById);
-router.delete("/:id", deleteMealById);
-router.get("/user/:id/between/:startDate/:endDate", getCaloriesByDays);
-router.get("/user/:id/startDate/:startDate/endDate/:endDate",getCaloriesBetweenDays)
+router.get("/user/", verifyToken, extractUserIdMiddleware, getMealsByUserId);
+router.get(
+  "/user/date/:date",
+  verifyToken,
+  extractUserIdMiddleware,
+  getMealsByUserIdAndDate
+);
+router.post(
+  "/",
+  verifyToken,
+  validatorCreateMeal,
+  extractUserIdMiddleware,
+  createMeal
+);
+router.put("/:id", verifyToken, extractUserIdMiddleware, updateMealById);
+router.delete("/:id", verifyToken, extractUserIdMiddleware, deleteMealById);
+router.get(
+  "/user/between/:startDate/:endDate",
+  verifyToken,
+  extractUserIdMiddleware,
+  getCaloriesByDays
+);
+router.get(
+  "/user/startDate/:startDate/endDate/:endDate",
+  verifyToken,
+  extractUserIdMiddleware,
+  getCaloriesBetweenDays
+);
 
 module.exports = router;

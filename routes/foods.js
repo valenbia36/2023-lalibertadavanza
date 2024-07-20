@@ -6,11 +6,12 @@ const {
   getFoodsByCategory,
 } = require("../controllers/foods");
 const { validatorCreateFood } = require("../validators/foods");
+const { verifyToken } = require("../utils/handleJWT");
 //const authMiddleware = require('../middleware/sessionMiddleware');
 //const checkRol = require('../middleware/role');
 
-router.get("/", getFoods);
-router.get("/category/:categoryName", getFoodsByCategory);
-router.post("/", validatorCreateFood, createFood);
+router.get("/", verifyToken, getFoods);
+router.get("/category/:categoryName", verifyToken, getFoodsByCategory);
+router.post("/", validatorCreateFood, verifyToken, createFood);
 
 module.exports = router;

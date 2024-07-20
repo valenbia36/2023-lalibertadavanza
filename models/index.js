@@ -1,6 +1,5 @@
 const models = {
   usersModel: require("./users"),
-  relationshipRequestModel: require("./relationshipRequest"),
   foodModel: require("./food"),
   mealModel: require("./meal"),
   categoryModel: require("./category"),
@@ -9,6 +8,7 @@ const models = {
   intermittentFastingModel: require("./intermittentFasting"),
   recipeModel: require("./recipe"),
   weekModel: require("./week"),
+  shoppingListModel: require('./shoppingList')
 };
 
 module.exports = models;

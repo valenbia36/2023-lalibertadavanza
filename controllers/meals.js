@@ -1,21 +1,89 @@
-const { mealModel } = require("../models");
+const { mealModel, intermittentFastingModel } = require("../models");
 const { handleHttpError } = require("../utils/handleErrors");
+const jwt = require("jsonwebtoken");
 
-const getMeals = async (req, res) => {
+async function getActiveIntermittentFastingByUserId(userId) {
   try {
-    const user = req.user;
-    const data = await mealModel.find({});
-    res.send({ data, user });
+    const data = await intermittentFastingModel.find({
+      userId: userId,
+    });
+    const today = new Date();
+    today.setSeconds(0);
+    today.setHours(today.getHours() - 3);
+    const filteredData = data.find(
+      (item) => today >= item.startDateTime && today <= item.endDateTime
+    );
+    return filteredData;
   } catch (e) {
-    handleHttpError(res, "ERROR_GET_MEALS", 500);
+    handleHttpError(
+      res,
+      "ERROR_GET_ACTIVE_INTERMITTENT_FASTING_BY_USER_ID",
+      500
+    );
   }
-};
+}
+async function deleteActiveIntermittentFasting(id) {
+  try {
+    const data = await intermittentFastingModel.delete({
+      _id: id,
+    });
+  } catch (e) {
+    handleHttpError(res, "ERROR_DELETE_GOAL", 500);
+  }
+}
+
+function calculateNutritionalInformation(meal) {
+  let totalCalories = 0;
+  let totalFats = 0;
+  let totalCarbs = 0;
+  let totalProteins = 0;
+  meal.foods.forEach((food) => {
+    let caloriesPerFood = Math.round(
+      food.weightConsumed * (food.foodId.calories / food.foodId.weight)
+    );
+    let fatsPerFood = Math.round(
+      food.weightConsumed * (food.foodId.fats / food.foodId.weight)
+    );
+    let carbsPerFood = Math.round(
+      food.weightConsumed * (food.foodId.carbs / food.foodId.weight)
+    );
+    let proteinsPerFood = Math.round(
+      food.weightConsumed * (food.foodId.proteins / food.foodId.weight)
+    );
+    food.caloriesPerFood = caloriesPerFood;
+    food.fatsPerFood = fatsPerFood;
+    food.carbsPerFood = carbsPerFood;
+    food.proteinsPerFood = proteinsPerFood;
+    totalCalories += caloriesPerFood;
+    totalFats += fatsPerFood;
+    totalCarbs += carbsPerFood;
+    totalProteins = +proteinsPerFood;
+  });
+  meal.totalCalories = totalCalories;
+  meal.totalFats = totalFats;
+  meal.totalCarbs = totalCarbs;
+  meal.totalProteins = totalProteins;
+  return meal;
+}
 
 const getMealsByUserId = async (req, res) => {
   try {
-    const user = req.user;
-    const data = await mealModel.find({ userId: req.params.id });
-    res.send({ data, user });
+    const userId = req.userId;
+
+    const data = await mealModel
+      .find({ userId: userId })
+      .select("-userId")
+      .populate({
+        path: "foods.foodId",
+      })
+      .exec();
+
+    const meals = data.map((meal) => meal.toJSON());
+    const mealsToSend = meals.map((meal) =>
+      calculateNutritionalInformation(meal)
+    );
+
+    res.send({ data: mealsToSend });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }
@@ -23,18 +91,31 @@ const getMealsByUserId = async (req, res) => {
 
 const getMealsByUserIdAndDate = async (req, res) => {
   try {
-    const user = req.user;
+    const userId = req.userId;
 
     const filter = {
-      userId: req.params.id,
+      userId: userId,
       date: {
         $gte: new Date(`${req.params.date}T00:00:00.000Z`),
         $lt: new Date(`${req.params.date}T23:59:59.999Z`),
       },
     };
 
-    const data = await mealModel.find(filter);
-    res.send({ data, user });
+    let data = await mealModel
+      .find(filter)
+      .select("-userId")
+      .populate({
+        path: "foods.foodId",
+        populate: {
+          path: "category",
+        },
+      })
+      .exec();
+    const meals = data.map((meal) => meal.toJSON());
+    const mealsToSend = meals.map((meal) =>
+      calculateNutritionalInformation(meal)
+    );
+    res.send({ mealsToSend });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_MEALS", 500);
   }
@@ -42,9 +123,25 @@ const getMealsByUserIdAndDate = async (req, res) => {
 
 const createMeal = async (req, res) => {
   try {
-    const data = await mealModel.create(req.body);
-
-    res.send({ data });
+    // Accede al userId desde req.body
+    const userId = req.userId;
+    // Agrega el userId a los datos de la comida antes de crearla
+    const mealData = { ...req.body, userId };
+    const activeIntermittent = await getActiveIntermittentFastingByUserId(
+      userId
+    );
+    if (
+      activeIntermittent &&
+      new Date(mealData.date) >= new Date(activeIntermittent.startDateTime) &&
+      new Date(mealData.date) <= new Date(activeIntermittent.endDateTime)
+    ) {
+      await deleteActiveIntermittentFasting(activeIntermittent._id);
+    }
+    const data = await mealModel.create(mealData);
+    // Eliminar el userId de la respuesta
+    const { userId: removedUserId, ...responseData } = data.toObject();
+    //res.status(200).end();
+    res.send({ data: responseData });
   } catch (e) {
     handleHttpError(res, "ERROR_CREATE_MEALS", 500);
   }
@@ -52,11 +149,35 @@ const createMeal = async (req, res) => {
 
 const updateMealById = async (req, res) => {
   try {
-    const data = await mealModel.findOneAndUpdate(
-      { _id: req.params.id },
+    const userId = req.userId;
+    const mealId = req.params.id;
+
+    // Primero, verificamos si la comida pertenece al usuario actual
+    const meal = await mealModel.findOne({ _id: mealId, userId: userId });
+    if (!meal) {
+      return handleHttpError(res, "Meal not found or unauthorized", 404);
+    }
+
+    // Si la comida pertenece al usuario, procedemos a actualizarla
+    const updatedMeal = await mealModel.findOneAndUpdate(
+      { _id: mealId },
       req.body
     );
-    res.send({ data });
+    const activeIntermittent = await getActiveIntermittentFastingByUserId(
+      userId
+    );
+    if (
+      activeIntermittent &&
+      new Date(updatedMeal.date) >=
+        new Date(activeIntermittent.startDateTime) &&
+      new Date(updatedMeal.date) <= new Date(activeIntermittent.endDateTime)
+    ) {
+      await deleteActiveIntermittentFasting(activeIntermittent._id);
+    }
+    // Eliminar el userId de la respuesta
+    const { userId: removedUserId, ...responseData } = updatedMeal.toObject();
+
+    res.send({ data: responseData });
   } catch (e) {
     handleHttpError(res, "ERROR_UPDATE_MEAL", 500);
   }
@@ -64,8 +185,23 @@ const updateMealById = async (req, res) => {
 
 const deleteMealById = async (req, res) => {
   try {
-    const data = await mealModel.delete({ _id: req.params.id });
-    res.send({ data });
+    // Obtener el userId de la solicitud
+    const userId = req.userId;
+    // Obtener la meal por el _id
+    const mealToDelete = await mealModel.findOne({ _id: req.params.id });
+    // Verificar si la meal existe y si el userId coincide
+    if (!mealToDelete || mealToDelete.userId.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ message: "You don't have permission to delete this meal" });
+    }
+
+    // Borrar la meal si todo está bien
+    const deletedMeal = await mealModel.deleteOne({ _id: req.params.id });
+
+    res
+      .status(200)
+      .json({ message: "Meal successfully deleted", data: deletedMeal });
   } catch (e) {
     handleHttpError(res, "ERROR_DELETE_MEAL", 500);
   }
@@ -73,8 +209,7 @@ const deleteMealById = async (req, res) => {
 
 const getCaloriesByDays = async (req, res) => {
   try {
-    console.log(req.params.startDate);
-    const userId = req.params.id;
+    const userId = req.userId;
     const startDate = new Date(req.params.startDate).toISOString();
     const endDate = new Date(req.params.endDate).toISOString();
     const filter = {
@@ -89,17 +224,24 @@ const getCaloriesByDays = async (req, res) => {
     while (fechaActual < fechaFin) {
       fechasIntermedias.push({
         date: fechaActual.toISOString(),
-        calories: 0,
+        totalCalories: 0,
       });
 
       fechaActual.setDate(fechaActual.getDate() + 1);
     }
 
-    const meals = await mealModel.find(filter);
+    const meals = await mealModel
+      .find(filter)
+      .select("-userId")
+      .populate({
+        path: "foods.foodId",
+      })
+      .exec();
     const dataOfMeals = {};
     meals.forEach((item) => {
       const date = item.date.toISOString().split("T")[0];
-      const calories = item.calories;
+      const meal = calculateNutritionalInformation(item);
+      const calories = meal.totalCalories;
 
       if (dataOfMeals[date]) {
         dataOfMeals[date] += calories;
@@ -120,10 +262,9 @@ const getCaloriesByDays = async (req, res) => {
         (item) => obtenerFechaSinHora(item.date) === fechaSinHora
       );
       if (index !== -1) {
-        fechasIntermedias[index].calories = calories;
+        fechasIntermedias[index].totalCalories = calories;
       }
     }
-
     res.send({ fechasIntermedias });
   } catch (e) {
     handleHttpError(res, "ERROR_GET_CALORIES", 500);
@@ -132,19 +273,30 @@ const getCaloriesByDays = async (req, res) => {
 
 const getCaloriesBetweenDays = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.userId;
     const startDate = req.params.startDate;
     const endDate = req.params.endDate;
+
     const filter = {
       userId: userId,
       date: { $gte: startDate, $lte: endDate },
     };
 
-    const result = await mealModel.find(filter);
+    const result = await mealModel
 
+      .find(filter)
+      .select("-userId")
+      .populate({
+        path: "foods.foodId",
+      })
+      .exec();
+    const meals = result.map((meal) => meal.toJSON());
+    const mealsToSend = meals.map((meal) =>
+      calculateNutritionalInformation(meal)
+    );
     let totalCalorias = 0;
-    result.forEach((record) => {
-      totalCalorias += record.calories;
+    mealsToSend.forEach((record) => {
+      totalCalorias += record.totalCalories;
     });
 
     res.send({ totalCalorias });
@@ -154,7 +306,6 @@ const getCaloriesBetweenDays = async (req, res) => {
 };
 
 module.exports = {
-  getMeals,
   createMeal,
   getMealsByUserId,
   getMealsByUserIdAndDate,
@@ -162,4 +313,5 @@ module.exports = {
   deleteMealById,
   getCaloriesBetweenDays,
   getCaloriesByDays,
+  calculateNutritionalInformation,
 };

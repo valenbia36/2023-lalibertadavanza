@@ -1,316 +1,145 @@
-const request = require('supertest');
-const sinon = require('sinon');
-const app = require('../app');
+const request = require("supertest");
+const app = require("../app");
 const { usersModel } = require("../models");
 
-let findOneStub;
-let findOneAndUpdateStub;
-
 beforeAll(async () => {
-    await usersModel.deleteMany({});
+  await usersModel.deleteMany({});
 });
 
-test("Esto deberia retornar un 404", async() => {
-    const response = await request(app)
-    .post('/api/auth/login')
-    .send(
-        {
-            "email":"noexiste@esteusuario.com",
-            "password":"error"
-        }
-    )
-    expect(response.statusCode).toEqual(404);
-})
+test("User tries to login with a non existing account an recieves an error (404)", async () => {
+  const response = await request(app).post("/api/auth/login").send({
+    email: "noexiste@esteusuario.com",
+    password: "error",
+  });
+  expect(response.statusCode).toEqual(404);
+});
 
-test("Se creo el usuario correctamente", async() => {
-    const response = await request(app)
-    .post('/api/auth/register')
-    .send(
-        {
-            "firstName": "test",
-            "lastName": "user",
-            "email": "adminuser@admin.com",
-            "password": "adminuser",
-            "sex": "male",
-            "age": "23",
-            "height": "1.80",
-            "weight": "70",
-            "role": "user"
-        }
-    )
-    expect(response.statusCode).toEqual(200);
-})
+test("User sign up is succesfull and new user its stored in the DB", async () => {
+  const response = await request(app).post("/api/auth/register").send({
+    // se registra
+    firstName: "test",
+    lastName: "user",
+    email: "adminuser@admin.com",
+    password: "adminuser",
+    sex: "male",
+    age: "23",
+    height: "1.80",
+    weight: "70",
+  });
+  expect(response.statusCode).toEqual(200); // valida que se registro ok
+  const response1 = await request(app).post("/api/auth/login").send({
+    // se logea para obtener token
+    email: "adminuser@admin.com",
+    password: "adminuser",
+  });
+  const response2 = await request(app) // busca si existe en la base de datos y verifica que todos los datos esten ok
+    .get("/api/auth/users/")
+    .set("Authorization", "Bearer " + response1._body.token);
+  expect(response2.body.data.firstName).toEqual("test");
+  expect(response2.body.data.lastName).toEqual("user");
+  expect(response2.body.data.email).toEqual("adminuser@admin.com");
+  expect(response2.body.data.sex).toEqual("male");
+  expect(response2.body.data.age).toEqual(23);
+  expect(response2.body.data.height).toEqual(1.8);
+  expect(response2.body.data.weight).toEqual(70);
+});
 
-test("Esto deberia retornar un 200", async() => {
-    const response = await request(app)
-    .post('/api/auth/login')
-    .send(
-        {
-            "email":"adminuser@admin.com",
-            "password":"adminuser"
-        }
-    )
-    expect(response.statusCode).toEqual(200);
-})
-
-test("Esto deberia retornar un 401, ya que la password no es correcta", async() => {
-    const response = await request(app)
-    .post('/api/auth/login')
-    .send(
-        {
-            "email":"adminuser@admin.com",
-            "password":"error"
-        }
-    )
-    expect(response.statusCode).toEqual(401);
-})
-
-test("Esto deberia retornar un 200", async() => {
-    const response = await request(app)
-    .get('/api/auth/users')
-    expect(response.statusCode).toEqual(200);
-})
-
-test("Esto deberia retornar un 200", async() => {
-    const response = await request(app)
-    .get('/api/auth/users')
-    expect(response.statusCode).toEqual(200);
-})
-
-test("Se creo y actualizo el usuario correctamente", async() => {
-    const response = await request(app)
-    .post('/api/auth/register')
-    .send(
-        {
-            "firstName": "test",
-            "lastName": "user",
-            "email": "testuser@gmail.com",
-            "password": "testuser",
-            "sex": "male",
-            "age": "23",
-            "height": "1.80",
-            "weight": "70",
-            "role": "user"
-        }
-    )
-    expect(response.statusCode).toEqual(200);
-
-    const responseParsed = JSON.parse(response.text);
-
-    const response1 = await request(app)
-    .put('/api/auth/users/updatePassword/' + responseParsed.user._id)
-    .send(
-        {
-            "password": "newPassword"
-        }
-    )
-    expect(response1.statusCode).toEqual(200);
-})
-
-test("Se creo y obtuvo el usuario correctamente", async() => {
-    const response = await request(app)
-    .post('/api/auth/register')
-    .send(
-        {
-            "firstName": "test",
-            "lastName": "user",
-            "email": "testuser1@gmail.com",
-            "password": "testuser",
-            "sex": "male",
-            "age": "23",
-            "height": "1.80",
-            "weight": "70",
-            "role": "user"
-        }
-    )
-    expect(response.statusCode).toEqual(200);
-
-    const responseParsed = JSON.parse(response.text);
-    const response1 = await request(app)
-    .get('/api/auth/users/' + responseParsed.user._id)
-    expect(response1.statusCode).toEqual(200);
-})
-
-test("Se creo y obtuvo el usuario por email correctamente", async() => {
-    const response = await request(app)
-    .post('/api/auth/register')
-    .send(
-        {
-            "firstName": "test",
-            "lastName": "user",
-            "email": "testuser999@gmail.com",
-            "password": "testuser",
-            "sex": "male",
-            "age": "23",
-            "height": "1.80",
-            "weight": "70",
-            "role": "user"
-        }
-    )
-    expect(response.statusCode).toEqual(200);
-
-    const response1 = await request(app)
-    .get('/api/auth/users/email/testuser999@gmail.com')
-    expect(response1.statusCode).toEqual(200);
-})
-
-test("Se creo y obtuvo el usuario por email correctamente", async() => {
-    const response = await request(app)
-    .post('/api/auth/register')
-    .send(
-        {
-            "firstName": "test",
-            "lastName": "user",
-            "email": "testuser9999@gmail.com",
-            "password": "testuser",
-            "sex": "male",
-            "age": "23",
-            "height": "1.80",
-            "weight": "70",
-            "role": "user"
-        }
-    )
-    expect(response.statusCode).toEqual(200);
-
-    const responseParsed = JSON.parse(response.text);
-
-    const response1 = await request(app)
-    .put('/api/auth/users/' + responseParsed.user._id)
+//Ver este, devuelve un 200
+test("User cant update his user with a random token", async () => {
+  const response = await request(app)
+    .put("/api/auth/users/updatePassword/")
     .send({
-        "firstName": "nuevo",
-        "lastName": "nombre",
+      password: "newPassword",
     })
-    expect(response1.statusCode).toEqual(200);
-})
+    .set("Authorization", "Bearer " + "token123");
+  expect(response.status).toEqual(400);
+  expect(response._body.message).toEqual("TOKEN_IS_REQUIRED");
+});
 
-test("Se creo y actualizo el usuario correctamente", async() => {
-    const response = await request(app)
-    .post('/api/auth/register')
-    .send(
-        {
-            "firstName": "test99",
-            "lastName": "user",
-            "email": "testuser99@gmail.com",
-            "password": "testuser",
-            "sex": "male",
-            "age": "23",
-            "height": "1.80",
-            "weight": "70",
-            "role": "user"
-        }
-    )
-    expect(response.statusCode).toEqual(200);
+test("User cant update his user with an invalid token format", async () => {
+  const response = await request(app)
+    .put("/api/auth/users/updatePassword/")
+    .send({
+      password: "newPassword",
+    })
+    .set("Authorization", "Bearer " + "");
+  expect(response.status).toEqual(400);
+  expect(response._body.message).toEqual("TOKEN_IS_REQUIRED");
+});
 
-    const responseParsed = JSON.parse(response.text);
+//Este tambien devuelve 200
+test("User cant update his user without a token", async () => {
+  const response = await request(app)
+    .put("/api/auth/users/updatePassword/")
+    .send({
+      password: "newPassword",
+    });
+  expect(response.status).toEqual(400);
+  expect(response._body.message).toEqual("TOKEN_IS_REQUIRED");
+});
 
-    const response1 = await request(app)
-    .delete('/api/auth/users/' + responseParsed.user._id)
-    expect(response1.statusCode).toEqual(200);
-})
-
-test("[LOGIN]Esto debe retornar un error 500", async () => {
-    const requestBody = {
-      email: 'test@example.com',
-      password: 'password123',
-    };
-
-    findOneStub = sinon.stub(usersModel, 'findOne').throws(new Error('Database error'));
-
-    const response = await request(app)
-      .post('/api/auth/login')
-      .send(requestBody);
-
-    expect(response.status).toEqual(500);
-
-    usersModel.findOne.restore();
+test("User cant sign-in in an unexsiting account", async () => {
+  const response = await request(app).post("/api/auth/login").send({
+    email: "noexiste@admin.com",
+    password: "noexiste",
   });
+  expect(response.status).toEqual(404);
+  expect(response._body.message).toEqual("USER_NOT_EXISTS");
+});
 
-test('[REGISTER]Esto debe retornar un error 500', async () => {
-    const requestBody = {
-        "firstName": "test",
-        "lastName": "user",
-        "email": "adminuser@admin.com",
-        "password": "adminuser",
-        "sex": "male",
-        "age": "23",
-        "height": "1.80",
-        "weight": "70",
-        "role": "user"
-    };
-
-    sinon.stub(usersModel, 'create').throws(new Error('Database error'));
-
-    const response = await request(app)
-      .post('/api/auth/register')
-      .send(requestBody);
-
-    expect(response.status).toEqual(500);
+test("User cant login with an incorrect password and gets an error", async () => {
+  const response1 = await request(app).post("/api/auth/register").send({
+    firstName: "test",
+    lastName: "user",
+    email: "badlogin@admin.com",
+    password: "adminuser",
+    sex: "male",
+    age: "23",
+    height: "1.80",
+    weight: "70",
   });
-
-test('[DELETE]Esto debe retornar un error 500', async () => {
-
-    sinon.stub(usersModel, 'delete').throws(new Error('Database error'));
-
-    const response = await request(app)
-      .delete('/api/auth/users/1234')
-
-    expect(response.status).toEqual(500);
+  expect(response1.statusCode).toEqual(200);
+  const response2 = await request(app).post("/api/auth/login").send({
+    email: "badlogin@admin.com",
+    password: "error",
+  });
+  expect(response2.statusCode).toEqual(401);
 });
 
-test('[GET USERS]Esto debe retornar un error 500"', async () => {
+test("User sign up and then delete his account succesfull", async () => {
+  const response = await request(app).post("/api/auth/register").send({
+    // se registra
+    firstName: "test",
+    lastName: "user",
+    email: "usertodelete@admin.com",
+    password: "adminuser",
+    sex: "male",
+    age: "23",
+    height: "1.80",
+    weight: "70",
+  });
+  expect(response.statusCode).toEqual(200);
 
-    sinon.stub(usersModel, 'find').throws(new Error('Database error'));
+  const response2 = await request(app).post("/api/auth/login").send({
+    // se logea para obtener token
+    email: "usertodelete@admin.com",
+    password: "adminuser",
+  });
+  expect(response2.statusCode).toEqual(200);
 
-    const response = await request(app)
-      .get('/api/auth/users')
+  const response3 = await request(app)
+    .delete("/api/auth/users/")
+    .set(
+      // borra el usuario
+      "Authorization",
+      "Bearer " + response2._body.token
+    );
+  expect(response3.statusCode).toEqual(200);
+  expect(response3._body.message).toEqual("USER_DELETE_SUCCESFULL");
 
-    expect(response.status).toEqual(500);
-});
-
-test('[GET USER BY ID]Esto debe retornar un error 500"', async () => {
-
-    findOneStub.throws(new Error('Database error'));
-
-    const response = await request(app)
-      .get('/api/auth/users/1234')
-
-    expect(response.status).toEqual(500);
-});
-
-test('[GET USER BY EMAIL]Esto debe retornar un error 500"', async () => {
-
-    sinon.stub(usersModel, 'findOne').throws(new Error('Database error'));
-
-    const response = await request(app)
-      .get('/api/auth/users/email/1234')
-
-    expect(response.status).toEqual(500);
-});
-
-test('[UPDATE USER]Esto debe retornar un error 500"', async () => {
-
-    findOneAndUpdateStub = sinon.stub(usersModel, 'findOneAndUpdate').throws(new Error('Database error'));
-
-    const response = await request(app)
-      .put('/api/auth/users/1234')
-      .send({
-        "firstName": "test"
-      })
-
-    expect(response.status).toEqual(500);
-});
-
-test('[UPDATE PASSWORD]Esto debe retornar un error 500"', async () => {
-
-    const requestBody = {
-        "password": "cambioDePassword"
-    };
-
-    findOneAndUpdateStub.throws(new Error('Database error'));
-
-    const response = await request(app)
-      .put('/api/auth/users/updatePassword/1234')
-      .send(requestBody);
-
-    expect(response.status).toEqual(500);
+  const response4 = await request(app) // busca si existe en la base de datos y no existe
+    .get("/api/auth/users/")
+    .set("Authorization", "Bearer " + response2._body.token);
+  expect(response4.status).toEqual(404);
+  expect(response4._body.message).toEqual("USER_NOT_EXISTS");
 });
